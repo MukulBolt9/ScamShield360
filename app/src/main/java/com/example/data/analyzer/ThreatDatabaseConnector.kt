@@ -85,7 +85,7 @@ object ThreatDatabaseConnector {
         if (status == "ok") {
           val threat = json.optString("threat", "malware_download")
           val urlStatus = json.optString("url_status", "online")
-          val ref = json.optString("urlhaus_reference", null)
+          val ref = if (json.has("urlhaus_reference")) json.optString("urlhaus_reference") else null
           val tagsArray = json.optJSONArray("tags")
           val tagsList = mutableListOf<String>()
           if (tagsArray != null) {
@@ -123,7 +123,7 @@ object ThreatDatabaseConnector {
           val hostJson = JSONObject(hostJsonStr)
           if (hostJson.optString("query_status", "") == "ok") {
             val urlCount = hostJson.optInt("url_count", 1)
-            val ref = hostJson.optString("urlhaus_reference", null)
+            val ref = if (hostJson.has("urlhaus_reference")) hostJson.optString("urlhaus_reference") else null
             return UrlhausResult(
               isListed = true,
               threatType = "malware_host",
@@ -181,7 +181,7 @@ object ThreatDatabaseConnector {
           val inDb = resultsObj.optBoolean("in_database", false)
           val verified = resultsObj.optBoolean("verified", false)
           val valid = resultsObj.optBoolean("valid", false)
-          val detail = resultsObj.optString("phish_detail_page", null)
+          val detail = if (resultsObj.has("phish_detail_page")) resultsObj.optString("phish_detail_page") else null
           if (inDb && (verified || valid)) {
             return PhishTankResult(
               isListed = true,
