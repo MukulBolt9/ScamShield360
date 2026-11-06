@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">ScamShield 360</string>
+    <string name="accessibility_service_description">ScamShield reads text on screen to automatically extract and analyze suspicious links in WhatsApp, SMS, and Chrome.</string>
+</resources>

@@ -1,0 +1,8 @@
+{
+  "name": "ScamShield 360",
+  "description": "AI Personal Cyber Guardian: 360° threat analysis, safe link sandbox, infrastructure graph, and scam prediction.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
