@@ -374,13 +374,8 @@ class ScreenLinkAccessibilityService : AccessibilityService() {
           LinkGuardianService.updateTelemetry(applicationContext, result.overallScore, isThreat)
 
           if (isThreat) {
-            val alertSummary = "${result.inputUrl} (${result.overallScore}/100) • ${result.attackVector}"
+            val alertSummary = "${result.inputUrl.take(35)}... (${result.overallScore}/100) • ${result.attackVector}"
             LinkGuardianService.updateThreatAlert(applicationContext, alertSummary, result.overallScore)
-
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            NotificationHelper.createNotificationChannel(applicationContext)
-            val notif = NotificationHelper.buildAutoScanAlertNotification(applicationContext, result)
-            notificationManager.notify(NotificationHelper.AUTO_ALERT_NOTIFICATION_ID, notif)
           } else {
             LinkGuardianService.clearThreatAlert(applicationContext)
           }

@@ -22,7 +22,7 @@ class LinkGuardianService : Service() {
       private set
 
     @Volatile
-    var isNowbarMode = false
+    var isNowbarMode = true
       private set
 
     var totalScanned = 0
@@ -120,7 +120,7 @@ class LinkGuardianService : Service() {
       }
       ACTION_START -> {
         isRunning = true
-        isNowbarMode = intent.getBooleanExtra(EXTRA_POWER_NOWBAR_MODE, false)
+        isNowbarMode = intent.getBooleanExtra(EXTRA_POWER_NOWBAR_MODE, true)
         startForeground(
           NotificationHelper.NOTIFICATION_ID,
           NotificationHelper.buildLiveNotification(

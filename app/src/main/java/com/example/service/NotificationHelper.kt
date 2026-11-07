@@ -15,23 +15,24 @@ import com.example.R
 
 object NotificationHelper {
   const val CHANNEL_ID = "scamshield_guardian_channel"
-  const val CHANNEL_NAME = "ScamShield Live Link Protection"
+  const val CHANNEL_NAME = "ScamShield Live Protection & Now Bar"
   const val NOTIFICATION_ID = 1001
 
   const val AUTO_ALERT_CHANNEL_ID = "scamshield_auto_alert_channel"
-  const val AUTO_ALERT_CHANNEL_NAME = "ScamShield Proactive Screen Alerts"
+  const val AUTO_ALERT_CHANNEL_NAME = "ScamShield Real-Time Security Alerts"
   const val AUTO_ALERT_NOTIFICATION_ID = 2001
 
   fun createNotificationChannel(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val manager = context.getSystemService(NotificationManager::class.java)
 
+      // Live ongoing channel optimized for Android 16 Live Updates & Samsung One UI 7 Now Bar
       val liveChannel = NotificationChannel(
         CHANNEL_ID,
         CHANNEL_NAME,
         NotificationManager.IMPORTANCE_LOW
       ).apply {
-        description = "Live ongoing background protection and Samsung One UI 7 Now Bar live status."
+        description = "Live ongoing background link protection, Pixel Live Updates, and Samsung One UI 7 Now Bar status."
         setShowBadge(false)
         lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         enableLights(true)
@@ -42,15 +43,11 @@ object NotificationHelper {
       val alertChannel = NotificationChannel(
         AUTO_ALERT_CHANNEL_ID,
         AUTO_ALERT_CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_HIGH
+        NotificationManager.IMPORTANCE_LOW
       ).apply {
-        description = "Proactive real-time heads-up alerts when suspicious links appear on screen."
+        description = "Real-time threat alerts integrated with ScamShield Live Update system."
         setShowBadge(true)
         lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        enableVibration(true)
-        vibrationPattern = longArrayOf(0, 200, 100, 200)
-        enableLights(true)
-        lightColor = Color.parseColor("#EF4444")
       }
       manager?.createNotificationChannel(alertChannel)
     }
@@ -58,7 +55,7 @@ object NotificationHelper {
 
   fun buildLiveNotification(
     context: Context,
-    isNowbarMode: Boolean,
+    isNowbarMode: Boolean = true,
     scannedCount: Int,
     threatCount: Int,
     latestScore: Int,
@@ -83,25 +80,25 @@ object NotificationHelper {
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
-    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-      .setSmallIcon(R.drawable.ic_launcher_foreground)
-      .setContentIntent(openAppPendingIntent)
-      .setOngoing(true)
-      .setOnlyAlertOnce(true)
-
     val statusTitle = when {
       isBankingShieldPaused -> "⏸️ ScamShield Paused • ${currentBankingAppName ?: "Banking Suite"}"
-      latestThreatAlertText != null && latestScore >= 70 -> "🚨 Critical Threat Blocked • $latestScore%"
-      latestThreatAlertText != null -> "⚠️ Suspicious Link Flagged • $latestScore%"
-      latestScore > 0 -> "🛡️ ScamShield Live • $latestScore%"
-      else -> "🛡️ ScamShield Live • Protected"
+      latestThreatAlertText != null && latestScore >= 70 -> "🚨 Critical Threat Flagged • $latestScore/100"
+      latestThreatAlertText != null -> "⚠️ Suspicious Link Flagged • $latestScore/100"
+      latestScore > 0 -> "🛡️ ScamShield Live • Protected"
+      else -> "🛡️ ScamShield Live • Active Protection"
     }
 
     val subTextStr = when {
-      isBankingShieldPaused -> "Privacy Shield • Paused"
-      latestThreatAlertText != null && latestScore >= 70 -> "Critical Threat Alert"
-      latestThreatAlertText != null -> "Security Warning"
-      else -> "Now Bar • Protection Active"
+      isBankingShieldPaused -> "Privacy Shield • Active"
+      latestThreatAlertText != null && latestScore >= 70 -> "Live Alert • Danger"
+      latestThreatAlertText != null -> "Live Alert • Suspicious"
+      else -> "Pixel & Samsung • Live Update"
+    }
+
+    val contentLine = when {
+      isBankingShieldPaused -> "Screen reading suspended to protect PINs & balances inside ${currentBankingAppName ?: "Banking Suite"}"
+      latestThreatAlertText != null -> latestThreatAlertText
+      else -> "Audited: $scannedCount links • Threats Blocked: $threatCount"
     }
 
     val bodyText = when {
@@ -117,36 +114,28 @@ object NotificationHelper {
       else -> Color.parseColor("#2563EB") // Blue for active safe monitoring
     }
 
-    if (isNowbarMode) {
-      // SAMSUNG ONE UI 7 NOW BAR & LIVE NOTIFICATION SPECIFICATION
-      builder
-        .setPriority(NotificationCompat.PRIORITY_LOW)
-        .setCategory(NotificationCompat.CATEGORY_STATUS)
-        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setColor(tintColor)
-        .setColorized(true)
-        .setShowWhen(true)
-        .setUsesChronometer(false)
-        .setSubText(subTextStr)
-        .setContentTitle(statusTitle)
-        .setContentText(if (isBankingShieldPaused) "Screen reading paused inside ${currentBankingAppName ?: "Banking Suite"}" else "Audited: $scannedCount • Blocked: $threatCount")
-        .setProgress(100, if (isBankingShieldPaused) 0 else latestScore, false)
-        .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
-        .addAction(R.drawable.ic_launcher_foreground, "🔍 Scan Screen", scanPendingIntent)
-        .addAction(R.drawable.ic_launcher_foreground, "🛡️ Open App", openAppPendingIntent)
-    } else {
-      // NORMAL MINIMAL MODE: Clean, simple, non-intrusive status
-      builder
-        .setPriority(NotificationCompat.PRIORITY_LOW)
-        .setCategory(NotificationCompat.CATEGORY_SERVICE)
-        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setColor(tintColor)
-        .setSubText(subTextStr)
-        .setContentTitle(statusTitle)
-        .setContentText("Audited: $scannedCount • Blocked: $threatCount")
-        .setProgress(100, if (isBankingShieldPaused) 0 else latestScore, false)
-        .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
-        .addAction(R.drawable.ic_launcher_foreground, "Scan Screen", scanPendingIntent)
+    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+      .setSmallIcon(R.drawable.ic_launcher_foreground)
+      .setContentIntent(openAppPendingIntent)
+      .setOngoing(true)
+      .setOnlyAlertOnce(true)
+      .setPriority(NotificationCompat.PRIORITY_LOW)
+      .setCategory(NotificationCompat.CATEGORY_STATUS)
+      .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+      .setColor(tintColor)
+      .setColorized(true)
+      .setShowWhen(true)
+      .setUsesChronometer(false)
+      .setSubText(subTextStr)
+      .setContentTitle(statusTitle)
+      .setContentText(contentLine)
+      .setProgress(100, if (isBankingShieldPaused) 0 else (if (latestScore > 0) latestScore else 100), false)
+      .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
+      .addAction(R.drawable.ic_launcher_foreground, "🔍 Scan Screen", scanPendingIntent)
+      .addAction(R.drawable.ic_launcher_foreground, "🛡️ Open App", openAppPendingIntent)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
     }
 
     return builder.build()
@@ -156,42 +145,16 @@ object NotificationHelper {
     context: Context,
     result: com.example.data.model.ThreatAnalysisResult
   ): Notification {
-    val reviewIntent = Intent(context, AssistantOverlayActivity::class.java).apply {
-      flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-      putExtra("EXTRA_INPUT_URL", result.inputUrl)
-      putExtra("EXTRA_INPUT_TEXT", result.inputMessage)
-    }
-    val reviewPendingIntent = PendingIntent.getActivity(
-      context, 201, reviewIntent,
-      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    // Legacy helper kept for backward compatibility; live updates are routed through buildLiveNotification
+    val alertSummary = "${if (result.overallScore >= 70) "Critical Scam" else "Suspicious Link"}: ${result.inputUrl.take(35)}... (${result.overallScore}/100)"
+    return buildLiveNotification(
+      context = context,
+      isNowbarMode = true,
+      scannedCount = LinkGuardianService.totalScanned,
+      threatCount = LinkGuardianService.totalThreats,
+      latestScore = result.overallScore,
+      latestThreatAlertText = alertSummary
     )
-
-    val isDanger = result.threatLevel == com.example.data.model.ThreatLevel.DANGER
-    val iconColor = if (isDanger) Color.parseColor("#EF4444") else Color.parseColor("#F59E0B")
-    val titlePrefix = if (isDanger) "🚨 CRITICAL THREAT ON SCREEN" else "⚠️ SUSPICIOUS LINK ON SCREEN"
-
-    // ON MODERN ANDROID (Android 14+ / 15 / 16+), UPDATE LIVE NOTIFICATION DIRECTLY TO AVOID DISRUPTIVE PUSH BANNERS
-    if (Build.VERSION.SDK_INT >= 34) {
-      val alertSummary = "$titlePrefix: ${result.inputUrl.take(35)}... (${result.overallScore}/100)"
-      LinkGuardianService.updateThreatAlert(context, alertSummary, result.overallScore)
-    }
-
-    return NotificationCompat.Builder(context, AUTO_ALERT_CHANNEL_ID)
-      .setSmallIcon(R.drawable.ic_launcher_foreground)
-      .setColor(iconColor)
-      .setContentTitle("$titlePrefix • ${result.overallScore}/100")
-      .setContentText("${result.inputUrl.take(45)}... ${result.verdictSummary}")
-      .setStyle(
-        NotificationCompat.BigTextStyle().bigText(
-          "Link detected: ${result.inputUrl}\n\nEvidence: ${result.verdictSummary}\nIdentity: ${result.identityConsistency?.consistencyVerdict ?: result.attackVector}\n\nTap to review full evidence matrix safely."
-        )
-      )
-      .setPriority(NotificationCompat.PRIORITY_HIGH)
-      .setCategory(NotificationCompat.CATEGORY_ALARM)
-      .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-      .setAutoCancel(true)
-      .setContentIntent(reviewPendingIntent)
-      .addAction(R.drawable.ic_launcher_foreground, "🔍 View Evidence Matrix", reviewPendingIntent)
-      .build()
   }
 }
+
