@@ -145,7 +145,7 @@ object NotificationHelper {
       builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
     }
 
-    // SAMSUNG ONE UI 7 NOWBAR METER CUSTOM LAYOUT
+    // SAMSUNG ONE UI 7 NOWBAR METER CUSTOM LAYOUT (ONLY applied when isNowbarMode is true)
     if (isNowbarMode) {
       try {
         val expandedViews = RemoteViews(context.packageName, R.layout.nowbar_meter_notification).apply {
@@ -165,7 +165,7 @@ object NotificationHelper {
           .setCustomBigContentView(expandedViews)
           .setStyle(NotificationCompat.DecoratedCustomViewStyle())
       } catch (e: Exception) {
-        // Fallback to standard Google Live Update layout if RemoteViews fails
+        // Fallback to standard Google Pixel Live Update layout if RemoteViews fails
       }
     }
 
@@ -179,7 +179,7 @@ object NotificationHelper {
     val alertSummary = "${if (result.overallScore >= 70) "Critical Scam" else "Suspicious Link"}: ${result.inputUrl.take(35)}... (${result.overallScore}/100)"
     return buildLiveNotification(
       context = context,
-      isNowbarMode = true,
+      isNowbarMode = LinkGuardianService.isNowbarMode,
       scannedCount = LinkGuardianService.totalScanned,
       threatCount = LinkGuardianService.totalThreats,
       latestScore = result.overallScore,

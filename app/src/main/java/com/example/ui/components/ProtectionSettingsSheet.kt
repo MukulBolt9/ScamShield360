@@ -128,14 +128,14 @@ fun ProtectionSettingsSheet(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 2. Samsung One UI 7 Now Bar Live Meter
+      // 2. Samsung One UI 7 Now Bar vs Google Pixel Live Status Chip Mode
       SettingToggleRow(
         icon = Icons.Default.Smartphone,
-        iconTint = if (isNowbarMeterMode) SamsungNowbarPurple else colors.onSurfaceVariant,
-        title = "Samsung Now Bar Live Meter",
-        subtitle = "Dynamic threat score progress meter on Lock Screen & AOD",
-        badgeText = "One UI 7",
-        badgeColor = SamsungNowbarPurple,
+        iconTint = if (isNowbarMeterMode) SamsungNowbarPurple else AccentBlue,
+        title = "Notification UI Mode",
+        subtitle = if (isNowbarMeterMode) "Samsung One UI 7 NowBar Meter active (Custom lock screen meter view)" else "Google Pixel Status Bar Live Update active (Native M3 chip, no custom box)",
+        badgeText = if (isNowbarMeterMode) "Samsung One UI 7" else "Google Pixel M3",
+        badgeColor = if (isNowbarMeterMode) SamsungNowbarPurple else AccentBlue,
         checked = isNowbarMeterMode,
         onCheckedChange = { onToggleNowbarMeterMode() }
       )

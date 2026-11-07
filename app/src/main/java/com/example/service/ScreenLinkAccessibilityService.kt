@@ -240,6 +240,10 @@ class ScreenLinkAccessibilityService : AccessibilityService() {
   override fun onAccessibilityEvent(event: AccessibilityEvent?) {
     if (event == null) return
 
+    if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+      scannedUrlsHistory.clear()
+    }
+
     val packageName = event.packageName?.toString()?.lowercase() ?: ""
     // If the event comes from system UI (notification shade, status bar, quick settings) or keyboard,
     // do not disrupt the ongoing banking privacy session!
