@@ -65,10 +65,12 @@ object TyposquattingDetector {
     BrandRegistryEntry("telegram", "Telegram", listOf("t.me", "telegram.org"), listOf("telegram")),
     BrandRegistryEntry("coinbase", "Coinbase", listOf("coinbase.com"), listOf("coinbase")),
     BrandRegistryEntry("binance", "Binance", listOf("binance.com"), listOf("binance")),
-    BrandRegistryEntry("ebay", "eBay", listOf("ebay.com", "m.ebay.com", "ebay.co.uk", "ebay.in", "ebay.de"), listOf("ebay"))
+    BrandRegistryEntry("ebay", "eBay", listOf("ebay.com", "m.ebay.com", "ebay.co.uk", "ebay.in", "ebay.de"), listOf("ebay")),
+    BrandRegistryEntry("yahoo", "Yahoo!", listOf("yahoo.com", "www.yahoo.com", "mail.yahoo.com", "finance.yahoo.com", "news.yahoo.com", "login.yahoo.com"), listOf("yahoo"))
   )
 
   val TOP_LEGITIMATE_DOMAINS = setOf(
+    "yahoo.com", "www.yahoo.com", "mail.yahoo.com", "login.yahoo.com", "finance.yahoo.com", "news.yahoo.com", "m.yahoo.com",
     "ebay.com", "m.ebay.com", "ebay.co.uk", "ebay.in", "ebay.de",
     "google.com", "www.google.com", "accounts.google.com", "mail.google.com",
     "youtube.com", "www.youtube.com", "m.youtube.com",

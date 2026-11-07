@@ -182,5 +182,20 @@ class ExampleUnitTest {
     assertTrue(TyposquattingDetector.isTopLegitimateDomain("gov.uk"))
     assertTrue(TyposquattingDetector.isTopLegitimateDomain("iitb.ac.in"))
   }
+
+  @Test
+  fun typosquattingDetector_recognizesYahooAsLegitimateDomain() {
+    val yahooAnalysis = TyposquattingDetector.analyzeDomain("https://www.yahoo.com")
+    assertEquals(null, yahooAnalysis.targetBrandImpersonated)
+    assertEquals(0, yahooAnalysis.riskScore)
+
+    val yahooMailAnalysis = TyposquattingDetector.analyzeDomain("https://mail.yahoo.com")
+    assertEquals(null, yahooMailAnalysis.targetBrandImpersonated)
+    assertEquals(0, yahooMailAnalysis.riskScore)
+
+    assertTrue(TyposquattingDetector.isTopLegitimateDomain("yahoo.com"))
+    assertTrue(TyposquattingDetector.isTopLegitimateDomain("www.yahoo.com"))
+    assertTrue(TyposquattingDetector.isTopLegitimateDomain("mail.yahoo.com"))
+  }
 }
 

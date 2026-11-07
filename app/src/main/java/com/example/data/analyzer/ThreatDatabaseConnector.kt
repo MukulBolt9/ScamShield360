@@ -29,6 +29,7 @@ data class UrlhausResult(
 data class ThreatCheckResult(
   val phishTank: PhishTankResult,
   val urlhaus: UrlhausResult,
+  val virusTotal: VirusTotalReport,
   val isFlaggedByAny: Boolean
 )
 
@@ -44,11 +45,13 @@ object ThreatDatabaseConnector {
   suspend fun checkUrl(url: String, host: String): ThreatCheckResult = withContext(Dispatchers.IO) {
     val phishTankRes = queryPhishTank(url)
     val urlhausRes = queryUrlhaus(url, host)
-    val flagged = phishTankRes.isListed || urlhausRes.isListed
+    val vtRes = VirusTotalThreatProvider.fetchThreatReport(url, host)
+    val flagged = phishTankRes.isListed || urlhausRes.isListed || vtRes.isFlagged
 
     ThreatCheckResult(
       phishTank = phishTankRes,
       urlhaus = urlhausRes,
+      virusTotal = vtRes,
       isFlaggedByAny = flagged
     )
   }

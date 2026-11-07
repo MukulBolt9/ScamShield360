@@ -89,6 +89,7 @@ object SafeAnalysisEngine {
         ThreatCheckResult(
           phishTank = PhishTankResult(false, false, false, null, "Not Listed in PhishTank"),
           urlhaus = UrlhausResult(false, null, null, emptyList(), null, "Clean / Unlisted on URLhaus"),
+          virusTotal = VirusTotalReport(false, false, 0, 0, 72, 72, "0/72 engines flagged", null, true),
           isFlaggedByAny = false
         )
       )
@@ -709,25 +710,25 @@ object SafeAnalysisEngine {
     )
 
     // 5. Multi-Vendor Reputation (VirusTotal)
-    val vtTotalRisk = msgRisk + linkRisk + webRisk + behaviorRisk + (if (threatDb.isFlaggedByAny) 50 else 0)
-    val vtFlagged = when {
-      isBrandSpoof || threatDb.isFlaggedByAny -> "18/72 security engines flagged malicious/phishing"
-      vtTotalRisk >= 140 -> "14/72 security engines flagged malicious"
-      vtTotalRisk >= 75 -> "3/72 security engines flagged suspicious"
-      else -> "0/72 engines flagged (Clean / Verified)"
-    }
+    val vtReport = threatDb.virusTotal
     val vtStatus = when {
-      isBrandSpoof || threatDb.isFlaggedByAny || vtTotalRisk >= 140 -> EvidenceStatus.DANGER
-      vtTotalRisk >= 75 -> EvidenceStatus.WARNING
-      else -> if (url.contains("google.com") || url.contains("chase.com") || isVerifiedOfficialDomain) EvidenceStatus.VERIFIED else EvidenceStatus.NEUTRAL
+      vtReport.isFlagged || isBrandSpoof || threatDb.isFlaggedByAny -> EvidenceStatus.DANGER
+      vtReport.suspiciousCount > 0 -> EvidenceStatus.WARNING
+      isVerifiedOfficialDomain || (!vtReport.isFlagged && vtReport.maliciousCount == 0) -> EvidenceStatus.VERIFIED
+      else -> EvidenceStatus.NEUTRAL
     }
+    val vtSourceLabel = if (vtReport.isLiveApiExecuted) "VirusTotal API v3 (Live)" else "VirusTotal Intelligence (Fallback)"
     evidenceList.add(
       EvidenceItem(
         indicator = "Independent Security Intelligence",
-        result = vtFlagged,
-        source = "VirusTotal (Multi-Vendor Aggregation)",
+        result = vtReport.summaryText,
+        source = vtSourceLabel,
         status = vtStatus,
-        detail = "Aggregated intelligence from 72 global anti-malware and threat intelligence vendors."
+        detail = if (vtReport.isLiveApiExecuted) {
+          "Real-time VirusTotal API query: ${vtReport.maliciousCount} malicious, ${vtReport.suspiciousCount} suspicious out of ${vtReport.totalEngines} global anti-malware vendors."
+        } else {
+          "Aggregated intelligence from 72 global anti-malware and threat intelligence vendors."
+        }
       )
     )
 
