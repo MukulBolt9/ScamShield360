@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.example.AssistantOverlayActivity
 import com.example.MainActivity
@@ -26,13 +27,13 @@ object NotificationHelper {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val manager = context.getSystemService(NotificationManager::class.java)
 
-      // Live ongoing channel optimized for Android 16 Live Updates & Samsung One UI 7 Now Bar
+      // Live ongoing channel optimized for Google Pixel Live Updates & Samsung One UI 7 Now Bar
       val liveChannel = NotificationChannel(
         CHANNEL_ID,
         CHANNEL_NAME,
         NotificationManager.IMPORTANCE_LOW
       ).apply {
-        description = "Live ongoing background link protection, Pixel Live Updates, and Samsung One UI 7 Now Bar status."
+        description = "Live ongoing background link protection, Pixel status bar live updates, and Samsung One UI 7 Now Bar meter status."
         setShowBadge(false)
         lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         enableLights(true)
@@ -88,17 +89,17 @@ object NotificationHelper {
       else -> "🛡️ ScamShield Live • Active Protection"
     }
 
-    val subTextStr = when {
-      isBankingShieldPaused -> "Privacy Shield • Active"
-      latestThreatAlertText != null && latestScore >= 70 -> "Live Alert • Danger"
-      latestThreatAlertText != null -> "Live Alert • Suspicious"
-      else -> "Pixel & Samsung • Live Update"
+    val chipText = when {
+      isBankingShieldPaused -> "Privacy Shield"
+      latestThreatAlertText != null && latestScore >= 70 -> "Scam Threat!"
+      latestThreatAlertText != null -> "Suspicious Link"
+      else -> "ScamShield Live"
     }
 
     val contentLine = when {
-      isBankingShieldPaused -> "Screen reading suspended to protect PINs & balances inside ${currentBankingAppName ?: "Banking Suite"}"
+      isBankingShieldPaused -> "Screen reading suspended inside ${currentBankingAppName ?: "Banking Suite"}"
       latestThreatAlertText != null -> latestThreatAlertText
-      else -> "Audited: $scannedCount links • Threats Blocked: $threatCount"
+      else -> "Audited: $scannedCount links • Blocked: $threatCount threats"
     }
 
     val bodyText = when {
@@ -114,28 +115,58 @@ object NotificationHelper {
       else -> Color.parseColor("#2563EB") // Blue for active safe monitoring
     }
 
+    val progressVal = if (isBankingShieldPaused) 0 else (if (latestScore > 0) latestScore else 100)
+
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-      .setSmallIcon(R.drawable.ic_launcher_foreground)
+      .setSmallIcon(R.drawable.ic_notification_shield)
       .setContentIntent(openAppPendingIntent)
       .setOngoing(true)
       .setOnlyAlertOnce(true)
       .setPriority(NotificationCompat.PRIORITY_LOW)
-      .setCategory(NotificationCompat.CATEGORY_STATUS)
+      .setCategory(NotificationCompat.CATEGORY_PROGRESS)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
       .setColor(tintColor)
       .setColorized(true)
       .setShowWhen(true)
       .setUsesChronometer(false)
-      .setSubText(subTextStr)
+      .setSubText(chipText)
       .setContentTitle(statusTitle)
       .setContentText(contentLine)
-      .setProgress(100, if (isBankingShieldPaused) 0 else (if (latestScore > 0) latestScore else 100), false)
+      .setProgress(100, progressVal, false)
       .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
-      .addAction(R.drawable.ic_launcher_foreground, "🔍 Scan Screen", scanPendingIntent)
-      .addAction(R.drawable.ic_launcher_foreground, "🛡️ Open App", openAppPendingIntent)
+      .addAction(R.drawable.ic_notification_shield, "🔍 Scan Screen", scanPendingIntent)
+      .addAction(R.drawable.ic_notification_shield, "🛡️ Open App", openAppPendingIntent)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      builder.setLocusId(androidx.core.content.LocusIdCompat("scamshield_live_update"))
+    }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
       builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+    }
+
+    // SAMSUNG ONE UI 7 NOWBAR METER CUSTOM LAYOUT
+    if (isNowbarMode) {
+      try {
+        val expandedViews = RemoteViews(context.packageName, R.layout.nowbar_meter_notification).apply {
+          setTextViewText(R.id.nowbar_title, statusTitle)
+          setTextViewText(R.id.nowbar_subtext, contentLine)
+          setTextViewText(R.id.nowbar_score_badge, if (isBankingShieldPaused) "PAUSED" else "$progressVal%")
+          setProgressBar(R.id.nowbar_progress_meter, 100, progressVal, false)
+        }
+
+        val collapsedViews = RemoteViews(context.packageName, R.layout.nowbar_meter_collapsed).apply {
+          setTextViewText(R.id.nowbar_collapsed_title, statusTitle)
+          setTextViewText(R.id.nowbar_collapsed_badge, if (isBankingShieldPaused) "PAUSED" else "$progressVal%")
+        }
+
+        builder
+          .setCustomContentView(collapsedViews)
+          .setCustomBigContentView(expandedViews)
+          .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+      } catch (e: Exception) {
+        // Fallback to standard Google Live Update layout if RemoteViews fails
+      }
     }
 
     return builder.build()
@@ -145,7 +176,6 @@ object NotificationHelper {
     context: Context,
     result: com.example.data.model.ThreatAnalysisResult
   ): Notification {
-    // Legacy helper kept for backward compatibility; live updates are routed through buildLiveNotification
     val alertSummary = "${if (result.overallScore >= 70) "Critical Scam" else "Suspicious Link"}: ${result.inputUrl.take(35)}... (${result.overallScore}/100)"
     return buildLiveNotification(
       context = context,
@@ -157,4 +187,3 @@ object NotificationHelper {
     )
   }
 }
-

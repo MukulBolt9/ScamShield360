@@ -25,7 +25,7 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Radar
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -410,7 +410,7 @@ private fun RadarAlertCard(alert: RadarTrend) {
 
       Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
-          imageVector = Icons.Default.TrendingUp,
+          imageVector = Icons.AutoMirrored.Filled.TrendingUp,
           contentDescription = null,
           tint = StatusDanger,
           modifier = Modifier.size(14.dp)

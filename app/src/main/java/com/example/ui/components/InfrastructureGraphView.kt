@@ -15,13 +15,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AltRoute
+import androidx.compose.material.icons.automirrored.filled.AltRoute
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Lan
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.MaterialTheme
@@ -306,11 +306,11 @@ private fun DevThreatNodeItem(
 }
 
 private fun getNodeIcon(type: NodeType): ImageVector = when (type) {
-  NodeType.ORIGIN_MESSAGE -> Icons.Default.Message
+  NodeType.ORIGIN_MESSAGE -> Icons.AutoMirrored.Filled.Message
   NodeType.ORIGIN_URL -> Icons.Default.Link
   NodeType.DNS_HOSTING -> Icons.Default.Dns
   NodeType.NETWORK_ASN -> Icons.Default.Router
-  NodeType.REDIRECT_HOP -> Icons.Default.AltRoute
+  NodeType.REDIRECT_HOP -> Icons.AutoMirrored.Filled.AltRoute
   NodeType.FINAL_DESTINATION -> Icons.Default.Public
   NodeType.CREDENTIAL_FORM -> Icons.Default.LockOpen
 }

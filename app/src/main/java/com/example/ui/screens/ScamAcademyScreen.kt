@@ -66,9 +66,9 @@ fun ScamAcademyScreen(
       Column(
         modifier = Modifier
           .fillMaxWidth()
-          .clip(RoundedCornerShape(18.dp))
+          .clip(RoundedCornerShape(20.dp))
           .background(colors.surface)
-          .border(1.dp, colors.outline, RoundedCornerShape(18.dp))
+          .border(1.dp, colors.outline, RoundedCornerShape(20.dp))
           .padding(18.dp)
       ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
