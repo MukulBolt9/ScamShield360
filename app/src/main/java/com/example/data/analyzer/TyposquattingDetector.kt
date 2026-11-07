@@ -47,6 +47,9 @@ object TyposquattingDetector {
     BrandRegistryEntry("barclays", "Barclays", listOf("barclays.co.uk", "barclays.com"), listOf("barclays")),
     BrandRegistryEntry("hsbc", "HSBC", listOf("hsbc.com", "hsbc.co.in"), listOf("hsbc")),
     
+    // Government & Official Institutions
+    BrandRegistryEntry("gov_india", "Government of India (GoI / NIC)", listOf("india.gov.in", "nic.in", "gov.in", "ncert.nic.in", "uidai.gov.in", "incometax.gov.in", "cbse.gov.in", "passportindia.gov.in"), listOf("gov.in", "nic.in", "ncert", "uidai", "aadhaar", "digilocker", "passportindia")),
+    
     // Tech & Delivery
     BrandRegistryEntry("apple", "Apple Inc.", listOf("apple.com", "icloud.com"), listOf("apple", "icloud")),
     BrandRegistryEntry("google", "Google Services", listOf("google.com"), listOf("google")),
@@ -82,13 +85,15 @@ object TyposquattingDetector {
     "axisbank.com", "www.axisbank.com", "axis.bank.in",
     "icicibank.com", "www.icicibank.com", "icici.bank.in",
     "hdfcbank.com", "www.hdfcbank.com", "hdfc.bank.in",
-    "kotak.com", "kotak.bank.in", "pnbindia.in", "pnb.bank.in", "bankofbaroda.in", "bob.bank.in"
+    "kotak.com", "kotak.bank.in", "pnbindia.in", "pnb.bank.in", "bankofbaroda.in", "bob.bank.in",
+    "ncert.nic.in", "india.gov.in", "nic.in", "gov.in", "uidai.gov.in", "incometax.gov.in"
   )
 
   fun isTopLegitimateDomain(host: String): Boolean {
     val h = host.lowercase()
     if (TOP_LEGITIMATE_DOMAINS.contains(h)) return true
-    if (h.endsWith(".bank.in") || h.endsWith(".bank")) return true
+    val legitimateTlds = listOf(".bank.in", ".bank", ".gov.in", ".nic.in", ".gov", ".gov.uk", ".edu.in", ".ac.in", ".edu", ".org.in")
+    if (legitimateTlds.any { tld -> h == tld.removePrefix(".") || h.endsWith(tld) }) return true
     return TOP_LEGITIMATE_DOMAINS.any { h.endsWith(".$it") }
   }
 

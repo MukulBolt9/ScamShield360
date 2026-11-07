@@ -162,5 +162,25 @@ class ExampleUnitTest {
     assertEquals("State Bank of India (YONO SBI)", sbi123Analysis.targetBrandImpersonated)
     assertTrue(sbi123Analysis.riskScore >= 70)
   }
+
+  @Test
+  fun typosquattingDetector_recognizesGovernmentAndEducationalDomains() {
+    val ncertAnalysis = TyposquattingDetector.analyzeDomain("https://ncert.nic.in")
+    assertEquals(null, ncertAnalysis.targetBrandImpersonated)
+    assertEquals(0, ncertAnalysis.riskScore)
+
+    val govInAnalysis = TyposquattingDetector.analyzeDomain("https://india.gov.in")
+    assertEquals(null, govInAnalysis.targetBrandImpersonated)
+    assertEquals(0, govInAnalysis.riskScore)
+
+    val uidaiAnalysis = TyposquattingDetector.analyzeDomain("https://uidai.gov.in/en/")
+    assertEquals(null, uidaiAnalysis.targetBrandImpersonated)
+    assertEquals(0, uidaiAnalysis.riskScore)
+
+    assertTrue(TyposquattingDetector.isTopLegitimateDomain("ncert.nic.in"))
+    assertTrue(TyposquattingDetector.isTopLegitimateDomain("india.gov.in"))
+    assertTrue(TyposquattingDetector.isTopLegitimateDomain("gov.uk"))
+    assertTrue(TyposquattingDetector.isTopLegitimateDomain("iitb.ac.in"))
+  }
 }
 
