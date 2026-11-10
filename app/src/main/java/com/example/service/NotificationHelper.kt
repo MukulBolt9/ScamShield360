@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.example.AssistantOverlayActivity
 import com.example.MainActivity
@@ -36,7 +37,7 @@ object NotificationHelper {
         CHANNEL_NAME,
         NotificationManager.IMPORTANCE_LOW
       ).apply {
-        description = "Live ongoing background link protection and Android 16 Status Bar Live Update Chip."
+        description = "Live ongoing background link protection, Android 16 Status Bar Live Update Chip, and Samsung One UI Now Bar meter."
         setShowBadge(false)
         lockscreenVisibility = Notification.VISIBILITY_PUBLIC
       }
@@ -97,7 +98,8 @@ object NotificationHelper {
     latestScore: Int,
     isBankingShieldPaused: Boolean = false,
     currentBankingAppName: String? = null,
-    latestThreatAlertText: String? = null
+    latestThreatAlertText: String? = null,
+    isSamsungNowbarEnabled: Boolean = true
   ): Notification {
     val openAppIntent = Intent(context, MainActivity::class.java).apply {
       flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -146,9 +148,11 @@ object NotificationHelper {
 
     val progressVal = if (isBankingShieldPaused) 0 else (if (latestScore > 0) latestScore else 100)
 
-    // ANDROID 16 NATIVE LIVE UPDATE BUILDER (API 36+)
-    // Implements official ProgressStyle, setShortCriticalText, and promoted ongoing characteristics
-    // Note: Do NOT call setColorized(true) or use custom RemoteViews, as that disqualifies live update promotion
+    // ANDROID 16+ ARCHITECTURE (API 36+):
+    // On Android 16+, Samsung One UI (One UI 8+) natively translates platform Live Updates
+    // (ProgressStyle, setShortCriticalText, FLAG_PROMOTED_ONGOING) into the Samsung Now Bar
+    // (Lock screen, AOD, and status bar) without requiring custom RemoteViews!
+    // Google Pixel also uses this exact format for its native status bar chip.
     if (Build.VERSION.SDK_INT >= 36) {
       try {
         val progressStyle = Notification.ProgressStyle()
@@ -195,11 +199,15 @@ object NotificationHelper {
         Log.i(TAG, "Android 16 Live Update built. HasPromotableCharacteristics: ${notification.hasPromotableCharacteristics()}")
         return notification
       } catch (e: Throwable) {
-        Log.w(TAG, "Native API 36 Builder failed, falling back to NotificationCompat: ${e.message}")
+        Log.w(TAG, "Native API 36 Builder failed, falling back: ${e.message}")
       }
     }
 
-    // FALLBACK FOR PRE-ANDROID 16 DEVICES
+    // ANDROID 16 LOWER DEVICES (< API 36):
+    // Dual approach:
+    // If Samsung NowBar is enabled on Android 15/14 (One UI 7), apply the RemoteViews + DecoratedCustomViewStyle
+    // template (per akexorcist.dev One UI 7 NowBar specification) so Samsung users get the lock screen meter!
+    // Otherwise, build clean standard BigTextStyle notification.
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
       .setSmallIcon(R.drawable.ic_notification_shield)
       .setContentIntent(openAppPendingIntent)
@@ -227,6 +235,29 @@ object NotificationHelper {
 
     builder.extras.putBoolean("android.requestPromotedOngoing", true)
     builder.extras.putCharSequence("android.shortCriticalText", shortChipText)
+
+    if (isSamsungNowbarEnabled) {
+      try {
+        val expandedViews = RemoteViews(context.packageName, R.layout.nowbar_meter_notification).apply {
+          setTextViewText(R.id.nowbar_title, statusTitle)
+          setTextViewText(R.id.nowbar_subtext, contentLine)
+          setTextViewText(R.id.nowbar_score_badge, if (isBankingShieldPaused) "PAUSED" else "$progressVal%")
+          setProgressBar(R.id.nowbar_progress_meter, 100, progressVal, false)
+        }
+
+        val collapsedViews = RemoteViews(context.packageName, R.layout.nowbar_meter_collapsed).apply {
+          setTextViewText(R.id.nowbar_collapsed_title, statusTitle)
+          setTextViewText(R.id.nowbar_collapsed_badge, if (isBankingShieldPaused) "PAUSED" else "$progressVal%")
+        }
+
+        builder
+          .setCustomContentView(collapsedViews)
+          .setCustomBigContentView(expandedViews)
+          .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+      } catch (e: Exception) {
+        Log.w(TAG, "Samsung One UI 7 RemoteViews fallback to standard view: ${e.message}")
+      }
+    }
 
     val notification = builder.build()
     // FLAG_PROMOTED_ONGOING = 262144

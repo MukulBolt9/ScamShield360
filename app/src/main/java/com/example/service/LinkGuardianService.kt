@@ -13,9 +13,16 @@ class LinkGuardianService : Service() {
     const val ACTION_START = "com.example.service.ACTION_START"
     const val ACTION_STOP = "com.example.service.ACTION_STOP"
     const val ACTION_UPDATE_STATS = "com.example.service.ACTION_UPDATE_STATS"
+    const val ACTION_TOGGLE_SAMSUNG_NOWBAR = "com.example.service.ACTION_TOGGLE_SAMSUNG_NOWBAR"
+
+    const val EXTRA_SAMSUNG_NOWBAR_ENABLED = "extra_samsung_nowbar_enabled"
 
     @Volatile
     var isRunning = false
+      private set
+
+    @Volatile
+    var isSamsungNowbarEnabled = true
       private set
 
     var totalScanned = 0
@@ -25,9 +32,11 @@ class LinkGuardianService : Service() {
     var currentBankingAppName: String? = null
     var latestThreatAlertText: String? = null
 
-    fun startService(context: Context) {
+    fun startService(context: Context, samsungNowbarEnabled: Boolean = isSamsungNowbarEnabled) {
+      isSamsungNowbarEnabled = samsungNowbarEnabled
       val intent = Intent(context, LinkGuardianService::class.java).apply {
         action = ACTION_START
+        putExtra(EXTRA_SAMSUNG_NOWBAR_ENABLED, samsungNowbarEnabled)
       }
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         context.startForegroundService(intent)
@@ -43,6 +52,17 @@ class LinkGuardianService : Service() {
         action = ACTION_STOP
       }
       context.startService(intent)
+    }
+
+    fun toggleSamsungNowbar(context: Context, enabled: Boolean) {
+      isSamsungNowbarEnabled = enabled
+      if (isRunning) {
+        val intent = Intent(context, LinkGuardianService::class.java).apply {
+          action = ACTION_TOGGLE_SAMSUNG_NOWBAR
+          putExtra(EXTRA_SAMSUNG_NOWBAR_ENABLED, enabled)
+        }
+        context.startService(intent)
+      }
     }
 
     fun updateTelemetry(context: Context, score: Int, isThreat: Boolean) {
@@ -112,11 +132,27 @@ class LinkGuardianService : Service() {
       }
       ACTION_START -> {
         isRunning = true
+        if (intent.hasExtra(EXTRA_SAMSUNG_NOWBAR_ENABLED)) {
+          isSamsungNowbarEnabled = intent.getBooleanExtra(EXTRA_SAMSUNG_NOWBAR_ENABLED, true)
+        }
         startForeground(
           NotificationHelper.NOTIFICATION_ID,
           NotificationHelper.buildLiveNotification(
             this, totalScanned, totalThreats, latestScore,
-            isBankingShieldPaused, currentBankingAppName, latestThreatAlertText
+            isBankingShieldPaused, currentBankingAppName, latestThreatAlertText,
+            isSamsungNowbarEnabled
+          )
+        )
+      }
+      ACTION_TOGGLE_SAMSUNG_NOWBAR -> {
+        isSamsungNowbarEnabled = intent.getBooleanExtra(EXTRA_SAMSUNG_NOWBAR_ENABLED, true)
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(
+          NotificationHelper.NOTIFICATION_ID,
+          NotificationHelper.buildLiveNotification(
+            this, totalScanned, totalThreats, latestScore,
+            isBankingShieldPaused, currentBankingAppName, latestThreatAlertText,
+            isSamsungNowbarEnabled
           )
         )
       }
@@ -126,7 +162,8 @@ class LinkGuardianService : Service() {
           NotificationHelper.NOTIFICATION_ID,
           NotificationHelper.buildLiveNotification(
             this, totalScanned, totalThreats, latestScore,
-            isBankingShieldPaused, currentBankingAppName, latestThreatAlertText
+            isBankingShieldPaused, currentBankingAppName, latestThreatAlertText,
+            isSamsungNowbarEnabled
           )
         )
       }

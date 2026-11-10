@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.AccentBlue
 import com.example.ui.theme.DevModeCyan
 import com.example.ui.theme.JetBrainsMono
+import com.example.ui.theme.SamsungNowbarPurple
 import com.example.ui.theme.SpaceGrotesk
 import com.example.ui.theme.StatusSafe
 
@@ -52,12 +53,14 @@ import com.example.ui.theme.StatusSafe
 fun ProtectionSettingsSheet(
   onDismiss: () -> Unit,
   isBackgroundGuardian: Boolean,
+  isSamsungNowbarEnabled: Boolean = true,
   isPrivacyMode: Boolean,
   isAutomationMode: Boolean,
   isBankingPrivacyShield: Boolean,
   isBankingAppCurrentlyActive: Boolean,
   detectedBankingAppName: String?,
   onToggleBackgroundGuardian: () -> Unit,
+  onToggleSamsungNowbar: () -> Unit = {},
   onOpenPromotionSettings: () -> Unit,
   onTogglePrivacyMode: () -> Unit,
   onToggleAutomationMode: () -> Unit,
@@ -152,7 +155,7 @@ fun ProtectionSettingsSheet(
               )
               Spacer(modifier = Modifier.width(8.dp))
               Text(
-                text = "Android 16 Status Bar Live Chip",
+                text = "Android 16 Live Update & Now Bar",
                 fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
@@ -176,7 +179,7 @@ fun ProtectionSettingsSheet(
             }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-              text = "Live Update notification formatted with ProgressStyle and short critical text for Android 16 status bar chip & lock screen.",
+              text = "On Android 16+, Live Updates natively power the Pixel Status Bar Chip and Samsung One UI Now Bar. Pre-Android 16 devices use the dedicated One UI 7 lock screen meter layout below.",
               fontFamily = SpaceGrotesk,
               fontSize = 11.sp,
               color = colors.onSurfaceVariant,
@@ -215,7 +218,21 @@ fun ProtectionSettingsSheet(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 3. Banking & UPI Privacy Shield
+      // 3. Samsung One UI 7 NowBar Meter Mode (For Android 16-lower devices)
+      SettingToggleRow(
+        icon = Icons.Default.Smartphone,
+        iconTint = if (isSamsungNowbarEnabled) SamsungNowbarPurple else colors.onSurfaceVariant,
+        title = "Samsung One UI 7 Now Bar Meter",
+        subtitle = "Applies dedicated RemoteViews progress meter on Lock Screen & AOD for One UI 7 (Android 14/15 devices)",
+        badgeText = "One UI 7",
+        badgeColor = SamsungNowbarPurple,
+        checked = isSamsungNowbarEnabled,
+        onCheckedChange = { onToggleSamsungNowbar() }
+      )
+
+      Spacer(modifier = Modifier.height(12.dp))
+
+      // 4. Banking & UPI Privacy Shield
       SettingToggleRow(
         icon = Icons.Default.Security,
         iconTint = if (isBankingPrivacyShield) StatusSafe else colors.onSurfaceVariant,
@@ -230,7 +247,7 @@ fun ProtectionSettingsSheet(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 4. Automation Mode (Screen Auto-Guard)
+      // 5. Automation Mode (Screen Auto-Guard)
       SettingToggleRow(
         icon = Icons.Default.AutoAwesome,
         iconTint = if (isAutomationMode) DevModeCyan else colors.onSurfaceVariant,
@@ -244,7 +261,7 @@ fun ProtectionSettingsSheet(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 5. Zero-PII Privacy Mode
+      // 6. Zero-PII Privacy Mode
       SettingToggleRow(
         icon = Icons.Default.Lock,
         iconTint = if (isPrivacyMode) StatusSafe else colors.onSurfaceVariant,

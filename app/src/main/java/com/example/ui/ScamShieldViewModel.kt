@@ -85,6 +85,10 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
   // Android 16 Live Update Status Chip active indicator
   val isLiveChipActive: StateFlow<Boolean> = _isBackgroundGuardian.asStateFlow()
 
+  // Samsung One UI 7 NowBar mode for Android 16-lower devices
+  private val _isSamsungNowbarEnabled = MutableStateFlow(true)
+  val isSamsungNowbarEnabled: StateFlow<Boolean> = _isSamsungNowbarEnabled.asStateFlow()
+
   // Privacy Mode: Auto-redacts personal tokens and private query params
   private val _isPrivacyMode = MutableStateFlow(true)
   val isPrivacyMode: StateFlow<Boolean> = _isPrivacyMode.asStateFlow()
@@ -209,6 +213,12 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
     } else {
       LinkGuardianService.stopService(context)
     }
+  }
+
+  fun toggleSamsungNowbar(context: Context) {
+    val newState = !_isSamsungNowbarEnabled.value
+    _isSamsungNowbarEnabled.value = newState
+    LinkGuardianService.toggleSamsungNowbar(context, newState)
   }
 
   fun canPostPromotedNotifications(context: Context): Boolean {

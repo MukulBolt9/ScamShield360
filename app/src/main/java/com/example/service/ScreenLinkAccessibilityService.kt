@@ -254,6 +254,15 @@ class ScreenLinkAccessibilityService : AccessibilityService() {
     val isLegitBankApp = isBankingOrUpiApp(packageName)
     val isBrowser = WEB_BROWSER_PACKAGES.contains(packageName)
 
+    // Immediate exit check: if user switched away from a standalone banking/UPI app to a regular app
+    if (_isBankingPrivacyActive.value && !isLegitBankApp && !isBrowser) {
+      Log.i(TAG, "Banking app exited to $packageName. Resuming auto-scanning immediately.")
+      _isBankingPrivacyActive.value = false
+      _detectedBankingAppName.value = null
+      scannedUrlsHistory.clear()
+      LinkGuardianService.updateBankingPrivacyStatus(applicationContext, isPaused = false, appName = null)
+    }
+
     val node = rootInActiveWindow ?: return
     val collectedText = StringBuilder()
     traverseNodes(node, collectedText)
@@ -317,6 +326,20 @@ class ScreenLinkAccessibilityService : AccessibilityService() {
       isLegitBankDomain = false
     }
 
+    // Check if the current browser window actually contains the active bank domain anymore
+    if (isBrowser && activeBankingDomainInBrowser != null) {
+      val domainPresentInWindow = textLower.contains(activeBankingDomainInBrowser!!) ||
+          (matchedDomainEntry != null && matchedDomainEntry.key == activeBankingDomainInBrowser)
+
+      if (!domainPresentInWindow) {
+        // User closed the tab, typed a new URL, navigated back, or switched to another page!
+        Log.i(TAG, "Banking exit detected: User left banking domain ($activeBankingDomainInBrowser). Resuming live scanning immediately.")
+        activeBankingDomainInBrowser = null
+        activeBankingNameInBrowser = null
+        isLegitBankDomain = false
+      }
+    }
+
     val currentScreenUrls = if (text.isNotBlank()) SafeAnalysisEngine.extractAllUrls(text) else emptyList()
     val resolvedScreenUrls = if (currentScreenUrls.isNotEmpty()) {
       currentScreenUrls
@@ -341,7 +364,9 @@ class ScreenLinkAccessibilityService : AccessibilityService() {
       if (_isBankingPrivacyActive.value) {
         _isBankingPrivacyActive.value = false
         _detectedBankingAppName.value = null
+        scannedUrlsHistory.clear() // Clear cache so current screen links are instantly evaluated!
         LinkGuardianService.updateBankingPrivacyStatus(applicationContext, isPaused = false, appName = null)
+        Log.i(TAG, "Financial Privacy Exited: Protection resumed. Auditing visible links immediately.")
       }
     }
 
