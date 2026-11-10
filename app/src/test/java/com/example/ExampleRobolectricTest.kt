@@ -45,11 +45,10 @@ class ExampleRobolectricTest {
   }
 
   @Test
-  fun `notification helper builds valid live nowbar notification`() {
+  fun `notification helper builds valid live update notification`() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val notification = NotificationHelper.buildLiveNotification(
       context = context,
-      isNowbarMode = true,
       scannedCount = 10,
       threatCount = 2,
       latestScore = 80

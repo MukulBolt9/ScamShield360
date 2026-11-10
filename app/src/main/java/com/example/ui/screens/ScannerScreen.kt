@@ -101,7 +101,7 @@ fun ScannerScreen(
   isAutomationMode: Boolean = true,
   isBankingPrivacyActive: Boolean = false,
   isBackgroundGuardian: Boolean,
-  isNowbarMeterMode: Boolean,
+  isLiveChipActive: Boolean = true,
   hasNotificationPermission: Boolean,
   isNotificationBannerDismissed: Boolean,
   isAccessibilityEnabled: Boolean,
@@ -119,7 +119,7 @@ fun ScannerScreen(
   onTogglePrivacyMode: () -> Unit,
   onToggleAutomationMode: () -> Unit = {},
   onToggleBackgroundGuardian: () -> Unit,
-  onToggleNowbarMeterMode: () -> Unit,
+  onOpenPromotionSettings: () -> Unit = {},
   contentPadding: PaddingValues,
   modifier: Modifier = Modifier
 ) {
@@ -132,14 +132,13 @@ fun ScannerScreen(
     ProtectionSettingsSheet(
       onDismiss = { showProtectionSettingsSheet = false },
       isBackgroundGuardian = isBackgroundGuardian,
-      isNowbarMeterMode = isNowbarMeterMode,
       isPrivacyMode = isPrivacyMode,
       isAutomationMode = isAutomationMode,
       isBankingPrivacyShield = true,
       isBankingAppCurrentlyActive = isBankingPrivacyActive,
       detectedBankingAppName = if (isBankingPrivacyActive) "Banking Platform / App" else null,
       onToggleBackgroundGuardian = onToggleBackgroundGuardian,
-      onToggleNowbarMeterMode = onToggleNowbarMeterMode,
+      onOpenPromotionSettings = onOpenPromotionSettings,
       onTogglePrivacyMode = onTogglePrivacyMode,
       onToggleAutomationMode = onToggleAutomationMode,
       onToggleBankingPrivacyShield = {}
@@ -308,9 +307,9 @@ fun ScannerScreen(
             modifier = Modifier.weight(1f)
           )
           ProtectionPill(
-            title = "Now Bar",
-            active = isNowbarMeterMode,
-            activeColor = SamsungNowbarPurple,
+            title = "Live Chip",
+            active = isLiveChipActive,
+            activeColor = AccentBlue,
             modifier = Modifier.weight(1f)
           )
           ProtectionPill(

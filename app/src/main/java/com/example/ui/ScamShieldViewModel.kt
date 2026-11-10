@@ -17,6 +17,7 @@ import com.example.data.repository.RadarTrend
 import com.example.data.repository.ScamPresetRepository
 import com.example.data.repository.ScamShieldRepository
 import com.example.service.LinkGuardianService
+import com.example.service.NotificationHelper
 import com.example.service.ScreenLinkAccessibilityService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,7 +72,7 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
   private val _isDevMode = MutableStateFlow(false)
   val isDevMode: StateFlow<Boolean> = _isDevMode.asStateFlow()
 
-  // Notification Permission & Samsung Now Bar Mode
+  // Notification Permission & Live Update Status Chip
   private val _hasNotificationPermission = MutableStateFlow(false)
   val hasNotificationPermission: StateFlow<Boolean> = _hasNotificationPermission.asStateFlow()
 
@@ -81,8 +82,8 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
   private val _isBackgroundGuardian = MutableStateFlow(false)
   val isBackgroundGuardian: StateFlow<Boolean> = _isBackgroundGuardian.asStateFlow()
 
-  private val _isNowbarMeterMode = MutableStateFlow(true) // Samsung Now Bar mode enabled by default
-  val isNowbarMeterMode: StateFlow<Boolean> = _isNowbarMeterMode.asStateFlow()
+  // Android 16 Live Update Status Chip active indicator
+  val isLiveChipActive: StateFlow<Boolean> = _isBackgroundGuardian.asStateFlow()
 
   // Privacy Mode: Auto-redacts personal tokens and private query params
   private val _isPrivacyMode = MutableStateFlow(true)
@@ -188,7 +189,7 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
     _hasNotificationPermission.value = granted
     if (granted) {
       _isBackgroundGuardian.value = true
-      LinkGuardianService.startService(context, _isNowbarMeterMode.value)
+      LinkGuardianService.startService(context)
     }
   }
 
@@ -204,18 +205,18 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
     val newState = !_isBackgroundGuardian.value
     _isBackgroundGuardian.value = newState
     if (newState) {
-      LinkGuardianService.startService(context, _isNowbarMeterMode.value)
+      LinkGuardianService.startService(context)
     } else {
       LinkGuardianService.stopService(context)
     }
   }
 
-  fun toggleNowbarMeterMode(context: Context) {
-    val newState = !_isNowbarMeterMode.value
-    _isNowbarMeterMode.value = newState
-    if (_isBackgroundGuardian.value) {
-      LinkGuardianService.startService(context, newState)
-    }
+  fun canPostPromotedNotifications(context: Context): Boolean {
+    return NotificationHelper.canPostPromotedNotifications(context)
+  }
+
+  fun openPromotionSettings(context: Context) {
+    NotificationHelper.openPromotionSettings(context)
   }
 
   fun launchAssistantOverlayOverAnyApp(context: Context) {

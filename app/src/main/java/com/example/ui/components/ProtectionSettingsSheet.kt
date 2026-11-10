@@ -2,6 +2,7 @@ package com.example.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.AccentBlue
 import com.example.ui.theme.DevModeCyan
 import com.example.ui.theme.JetBrainsMono
-import com.example.ui.theme.SamsungNowbarPurple
 import com.example.ui.theme.SpaceGrotesk
 import com.example.ui.theme.StatusSafe
 
@@ -51,14 +52,13 @@ import com.example.ui.theme.StatusSafe
 fun ProtectionSettingsSheet(
   onDismiss: () -> Unit,
   isBackgroundGuardian: Boolean,
-  isNowbarMeterMode: Boolean,
   isPrivacyMode: Boolean,
   isAutomationMode: Boolean,
   isBankingPrivacyShield: Boolean,
   isBankingAppCurrentlyActive: Boolean,
   detectedBankingAppName: String?,
   onToggleBackgroundGuardian: () -> Unit,
-  onToggleNowbarMeterMode: () -> Unit,
+  onOpenPromotionSettings: () -> Unit,
   onTogglePrivacyMode: () -> Unit,
   onToggleAutomationMode: () -> Unit,
   onToggleBankingPrivacyShield: () -> Unit,
@@ -128,17 +128,90 @@ fun ProtectionSettingsSheet(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 2. Samsung One UI 7 Now Bar vs Google Pixel Live Status Chip Mode
-      SettingToggleRow(
-        icon = Icons.Default.Smartphone,
-        iconTint = if (isNowbarMeterMode) SamsungNowbarPurple else AccentBlue,
-        title = "Notification UI Mode",
-        subtitle = if (isNowbarMeterMode) "Samsung One UI 7 NowBar Meter active (Custom lock screen meter view)" else "Google Pixel Status Bar Live Update active (Native M3 chip, no custom box)",
-        badgeText = if (isNowbarMeterMode) "Samsung One UI 7" else "Google Pixel M3",
-        badgeColor = if (isNowbarMeterMode) SamsungNowbarPurple else AccentBlue,
-        checked = isNowbarMeterMode,
-        onCheckedChange = { onToggleNowbarMeterMode() }
-      )
+      // 2. Android 16 Live Update Status Bar Chip
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(12.dp))
+          .background(colors.surfaceVariant)
+          .border(1.dp, colors.outline, RoundedCornerShape(12.dp))
+          .padding(12.dp)
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Icon(
+                imageVector = Icons.Default.Smartphone,
+                contentDescription = null,
+                tint = AccentBlue,
+                modifier = Modifier.size(16.dp)
+              )
+              Spacer(modifier = Modifier.width(8.dp))
+              Text(
+                text = "Android 16 Status Bar Live Chip",
+                fontFamily = SpaceGrotesk,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                color = colors.onSurface
+              )
+              Spacer(modifier = Modifier.width(6.dp))
+              Box(
+                modifier = Modifier
+                  .clip(RoundedCornerShape(4.dp))
+                  .background(AccentBlue.copy(alpha = 0.15f))
+                  .padding(horizontal = 5.dp, vertical = 1.dp)
+              ) {
+                Text(
+                  text = "Native Chip",
+                  fontFamily = JetBrainsMono,
+                  fontSize = 8.sp,
+                  color = AccentBlue,
+                  fontWeight = FontWeight.Bold
+                )
+              }
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+              text = "Live Update notification formatted with ProgressStyle and short critical text for Android 16 status bar chip & lock screen.",
+              fontFamily = SpaceGrotesk,
+              fontSize = 11.sp,
+              color = colors.onSurfaceVariant,
+              lineHeight = 15.sp
+            )
+          }
+
+          Spacer(modifier = Modifier.width(8.dp))
+
+          Box(
+            modifier = Modifier
+              .clip(RoundedCornerShape(8.dp))
+              .background(AccentBlue.copy(alpha = 0.12f))
+              .clickable { onOpenPromotionSettings() }
+              .padding(horizontal = 10.dp, vertical = 6.dp)
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                text = "Settings",
+                fontFamily = SpaceGrotesk,
+                fontSize = 11.sp,
+                color = AccentBlue,
+                fontWeight = FontWeight.Bold
+              )
+              Spacer(modifier = Modifier.width(4.dp))
+              Icon(
+                imageVector = Icons.Default.OpenInNew,
+                contentDescription = "Promotion Settings",
+                tint = AccentBlue,
+                modifier = Modifier.size(12.dp)
+              )
+            }
+          }
+        }
+      }
 
       Spacer(modifier = Modifier.height(12.dp))
 

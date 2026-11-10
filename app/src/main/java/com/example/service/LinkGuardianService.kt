@@ -13,16 +13,9 @@ class LinkGuardianService : Service() {
     const val ACTION_START = "com.example.service.ACTION_START"
     const val ACTION_STOP = "com.example.service.ACTION_STOP"
     const val ACTION_UPDATE_STATS = "com.example.service.ACTION_UPDATE_STATS"
-    const val ACTION_TOGGLE_NOWBAR = "com.example.service.ACTION_TOGGLE_NOWBAR"
-
-    const val EXTRA_POWER_NOWBAR_MODE = "extra_power_nowbar_mode"
 
     @Volatile
     var isRunning = false
-      private set
-
-    @Volatile
-    var isNowbarMode = true
       private set
 
     var totalScanned = 0
@@ -32,10 +25,9 @@ class LinkGuardianService : Service() {
     var currentBankingAppName: String? = null
     var latestThreatAlertText: String? = null
 
-    fun startService(context: Context, powerNowbarMode: Boolean) {
+    fun startService(context: Context) {
       val intent = Intent(context, LinkGuardianService::class.java).apply {
         action = ACTION_START
-        putExtra(EXTRA_POWER_NOWBAR_MODE, powerNowbarMode)
       }
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         context.startForegroundService(intent)
@@ -120,22 +112,10 @@ class LinkGuardianService : Service() {
       }
       ACTION_START -> {
         isRunning = true
-        isNowbarMode = intent.getBooleanExtra(EXTRA_POWER_NOWBAR_MODE, true)
         startForeground(
           NotificationHelper.NOTIFICATION_ID,
           NotificationHelper.buildLiveNotification(
-            this, isNowbarMode, totalScanned, totalThreats, latestScore,
-            isBankingShieldPaused, currentBankingAppName, latestThreatAlertText
-          )
-        )
-      }
-      ACTION_TOGGLE_NOWBAR -> {
-        isNowbarMode = !isNowbarMode
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(
-          NotificationHelper.NOTIFICATION_ID,
-          NotificationHelper.buildLiveNotification(
-            this, isNowbarMode, totalScanned, totalThreats, latestScore,
+            this, totalScanned, totalThreats, latestScore,
             isBankingShieldPaused, currentBankingAppName, latestThreatAlertText
           )
         )
@@ -145,7 +125,7 @@ class LinkGuardianService : Service() {
         notificationManager.notify(
           NotificationHelper.NOTIFICATION_ID,
           NotificationHelper.buildLiveNotification(
-            this, isNowbarMode, totalScanned, totalThreats, latestScore,
+            this, totalScanned, totalThreats, latestScore,
             isBankingShieldPaused, currentBankingAppName, latestThreatAlertText
           )
         )

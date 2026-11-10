@@ -84,7 +84,7 @@ fun ScamShieldApp(
 
   val isDevMode by viewModel.isDevMode.collectAsStateWithLifecycle()
   val isBackgroundGuardian by viewModel.isBackgroundGuardian.collectAsStateWithLifecycle()
-  val isNowbarMeterMode by viewModel.isNowbarMeterMode.collectAsStateWithLifecycle()
+  val isLiveChipActive by viewModel.isLiveChipActive.collectAsStateWithLifecycle()
   val hasNotificationPermission by viewModel.hasNotificationPermission.collectAsStateWithLifecycle()
   val isNotificationBannerDismissed by viewModel.isNotificationBannerDismissed.collectAsStateWithLifecycle()
   val isPrivacyMode by viewModel.isPrivacyMode.collectAsStateWithLifecycle()
@@ -320,7 +320,7 @@ fun ScamShieldApp(
             isAutomationMode = isAutomationMode,
             isBankingPrivacyActive = isBankingPrivacyActive,
             isBackgroundGuardian = isBackgroundGuardian,
-            isNowbarMeterMode = isNowbarMeterMode,
+            isLiveChipActive = isLiveChipActive,
             hasNotificationPermission = hasNotificationPermission,
             isNotificationBannerDismissed = isNotificationBannerDismissed,
             isAccessibilityEnabled = isAccessibilityEnabled,
@@ -344,7 +344,7 @@ fun ScamShieldApp(
             onTogglePrivacyMode = viewModel::togglePrivacyMode,
             onToggleAutomationMode = viewModel::toggleAutomationMode,
             onToggleBackgroundGuardian = { viewModel.toggleBackgroundGuardian(context) },
-            onToggleNowbarMeterMode = { viewModel.toggleNowbarMeterMode(context) },
+            onOpenPromotionSettings = { viewModel.openPromotionSettings(context) },
             contentPadding = paddingValues
           )
 
