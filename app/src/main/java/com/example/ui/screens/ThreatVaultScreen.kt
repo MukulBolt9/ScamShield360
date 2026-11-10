@@ -16,15 +16,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Radar
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -117,11 +121,15 @@ fun ThreatVaultScreen(
           }
 
           if (reports.isNotEmpty()) {
-            IconButton(onClick = onClearAll) {
+            IconButton(
+              onClick = onClearAll,
+              modifier = Modifier.size(48.dp)
+            ) {
               Icon(
                 imageVector = Icons.Default.DeleteSweep,
                 contentDescription = "Clear all vault records",
-                tint = StatusDanger
+                tint = StatusDanger,
+                modifier = Modifier.size(20.dp)
               )
             }
           }
@@ -139,58 +147,95 @@ fun ThreatVaultScreen(
     }
 
     // Filter Chips
+    // Filter Chips in smooth horizontal LazyRow
     item {
-      Row(
+      LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        FilterChip(
-          selected = selectedFilter == null,
-          onClick = { selectedFilter = null },
-          label = { Text("All (${reports.size})", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
-          colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = AccentBlue,
-            selectedLabelColor = colors.surface,
-            containerColor = colors.surface,
-            labelColor = colors.onSurfaceVariant
+        item {
+          FilterChip(
+            selected = selectedFilter == null,
+            onClick = { selectedFilter = null },
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Default.FolderOpen,
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
+              )
+            },
+            label = { Text("All (${reports.size})", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
+            colors = FilterChipDefaults.filterChipColors(
+              selectedContainerColor = AccentBlue,
+              selectedLabelColor = colors.surface,
+              containerColor = colors.surface,
+              labelColor = colors.onSurfaceVariant
+            )
           )
-        )
+        }
 
-        FilterChip(
-          selected = selectedFilter == ThreatLevel.DANGER,
-          onClick = { selectedFilter = ThreatLevel.DANGER },
-          label = { Text("Scams", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
-          colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = StatusDanger,
-            selectedLabelColor = colors.surface,
-            containerColor = colors.surface,
-            labelColor = StatusDanger
+        item {
+          FilterChip(
+            selected = selectedFilter == ThreatLevel.DANGER,
+            onClick = { selectedFilter = ThreatLevel.DANGER },
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
+              )
+            },
+            label = { Text("Scams", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
+            colors = FilterChipDefaults.filterChipColors(
+              selectedContainerColor = StatusDanger,
+              selectedLabelColor = colors.surface,
+              containerColor = colors.surface,
+              labelColor = StatusDanger
+            )
           )
-        )
+        }
 
-        FilterChip(
-          selected = selectedFilter == ThreatLevel.SUSPICIOUS,
-          onClick = { selectedFilter = ThreatLevel.SUSPICIOUS },
-          label = { Text("Suspicious", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
-          colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = StatusSuspicious,
-            selectedLabelColor = colors.surface,
-            containerColor = colors.surface,
-            labelColor = StatusSuspicious
+        item {
+          FilterChip(
+            selected = selectedFilter == ThreatLevel.SUSPICIOUS,
+            onClick = { selectedFilter = ThreatLevel.SUSPICIOUS },
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Default.Shield,
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
+              )
+            },
+            label = { Text("Suspicious", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
+            colors = FilterChipDefaults.filterChipColors(
+              selectedContainerColor = StatusSuspicious,
+              selectedLabelColor = colors.surface,
+              containerColor = colors.surface,
+              labelColor = StatusSuspicious
+            )
           )
-        )
+        }
 
-        FilterChip(
-          selected = selectedFilter == ThreatLevel.SAFE,
-          onClick = { selectedFilter = ThreatLevel.SAFE },
-          label = { Text("Safe", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
-          colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = StatusSafe,
-            selectedLabelColor = colors.surface,
-            containerColor = colors.surface,
-            labelColor = StatusSafe
+        item {
+          FilterChip(
+            selected = selectedFilter == ThreatLevel.SAFE,
+            onClick = { selectedFilter = ThreatLevel.SAFE },
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
+              )
+            },
+            label = { Text("Safe", fontFamily = SpaceGrotesk, fontSize = 11.sp) },
+            colors = FilterChipDefaults.filterChipColors(
+              selectedContainerColor = StatusSafe,
+              selectedLabelColor = colors.surface,
+              containerColor = colors.surface,
+              labelColor = StatusSafe
+            )
           )
-        )
+        }
       }
     }
 
@@ -326,13 +371,13 @@ private fun VaultReportItem(
         Spacer(modifier = Modifier.width(6.dp))
         IconButton(
           onClick = onDelete,
-          modifier = Modifier.size(24.dp)
+          modifier = Modifier.size(44.dp)
         ) {
           Icon(
             imageVector = Icons.Default.Delete,
             contentDescription = "Delete",
             tint = colors.onSurfaceVariant,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(18.dp)
           )
         }
       }

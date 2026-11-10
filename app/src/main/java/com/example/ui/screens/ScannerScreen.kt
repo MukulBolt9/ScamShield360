@@ -27,8 +27,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Link
@@ -36,7 +38,9 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -167,118 +171,220 @@ fun ScannerScreen(
           .border(1.dp, colors.outline, RoundedCornerShape(20.dp))
           .padding(18.dp)
       ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
-          ) {
-            Image(
-              painter = painterResource(id = R.drawable.ic_scamshield_minimal_logo),
-              contentDescription = "ScamShield Minimal Logo",
-              modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .border(1.dp, AccentBlue.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
-                .padding(4.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column {
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+          val isCompactWidth = maxWidth < 420.dp
+
+          if (isCompactWidth) {
+            // Stacked clean layout for compact mobile screens
+            Column(modifier = Modifier.fillMaxWidth()) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Image(
+                  painter = painterResource(id = R.drawable.ic_scamshield_minimal_logo),
+                  contentDescription = "ScamShield Minimal Logo",
                   modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(if (isBankingPrivacyActive) StatusSafe else AccentBlue)
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, AccentBlue.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                    .padding(5.dp)
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                  text = if (isBankingPrivacyActive) "PRIVACY SHIELD PAUSED" else "PROTECTION ACTIVE",
-                  fontFamily = JetBrainsMono,
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = if (isBankingPrivacyActive) StatusSafe else AccentBlue
-                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                      modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(if (isBankingPrivacyActive) StatusSafe else AccentBlue)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                      text = if (isBankingPrivacyActive) "PRIVACY SHIELD PAUSED" else "PROTECTION ACTIVE",
+                      fontFamily = JetBrainsMono,
+                      fontSize = 10.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = if (isBankingPrivacyActive) StatusSafe else AccentBlue
+                    )
+                  }
+                  Spacer(modifier = Modifier.height(2.dp))
+                  Text(
+                    text = "ScamShield 360",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = colors.onSurface
+                  )
+                }
               }
-              Spacer(modifier = Modifier.height(2.dp))
-              Text(
-                text = "ScamShield 360",
-                fontFamily = SpaceGrotesk,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = colors.onSurface
-              )
-            }
-          }
 
-          Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            // Screen Scan Button (Gemini style overlay without floating icon)
-            OutlinedButton(
-              onClick = onOpenAssistantOverlay,
-              modifier = Modifier.testTag("quick_screen_scan_button"),
-              shape = RoundedCornerShape(10.dp),
-              colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface),
-              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-            ) {
-              Icon(
-                imageVector = Icons.Default.AutoAwesome,
-                contentDescription = null,
-                tint = AccentBlue,
-                modifier = Modifier.size(15.dp)
-              )
-              Spacer(modifier = Modifier.width(4.dp))
-              Text(
-                text = "Screen Scan",
-                fontFamily = SpaceGrotesk,
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp
-              )
-            }
+              Spacer(modifier = Modifier.height(12.dp))
 
-            // Protection Settings Gear/Security Icon
-            IconButton(
-              onClick = { showProtectionSettingsSheet = true },
-              modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(colors.surfaceVariant)
-                .border(1.dp, colors.outline, RoundedCornerShape(10.dp))
-                .testTag("protection_settings_button")
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                OutlinedButton(
+                  onClick = onOpenAssistantOverlay,
+                  modifier = Modifier
+                    .weight(1f)
+                    .height(44.dp)
+                    .testTag("quick_screen_scan_button"),
+                  shape = RoundedCornerShape(10.dp),
+                  colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface),
+                  contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = AccentBlue,
+                    modifier = Modifier.size(16.dp)
+                  )
+                  Spacer(modifier = Modifier.width(6.dp))
+                  Text(
+                    text = "Screen Scan",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                  )
+                }
+
+                IconButton(
+                  onClick = { showProtectionSettingsSheet = true },
+                  modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(colors.surfaceVariant)
+                    .border(1.dp, colors.outline, RoundedCornerShape(10.dp))
+                    .testTag("protection_settings_button")
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Security,
+                    contentDescription = "Protection Settings",
+                    tint = colors.onSurface,
+                    modifier = Modifier.size(20.dp)
+                  )
+                }
+              }
+            }
+          } else {
+            // Horizontal layout for wider mobile/tablet displays
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically
             ) {
-              Icon(
-                imageVector = Icons.Default.Security,
-                contentDescription = "Protection Settings",
-                tint = colors.onSurface,
-                modifier = Modifier.size(18.dp)
-              )
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+              ) {
+                Image(
+                  painter = painterResource(id = R.drawable.ic_scamshield_minimal_logo),
+                  contentDescription = "ScamShield Minimal Logo",
+                  modifier = Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, AccentBlue.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                    .padding(5.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                      modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(if (isBankingPrivacyActive) StatusSafe else AccentBlue)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                      text = if (isBankingPrivacyActive) "PRIVACY SHIELD PAUSED" else "PROTECTION ACTIVE",
+                      fontFamily = JetBrainsMono,
+                      fontSize = 10.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = if (isBankingPrivacyActive) StatusSafe else AccentBlue
+                    )
+                  }
+                  Spacer(modifier = Modifier.height(2.dp))
+                  Text(
+                    text = "ScamShield 360",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 19.sp,
+                    color = colors.onSurface
+                  )
+                }
+              }
+
+              Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                OutlinedButton(
+                  onClick = onOpenAssistantOverlay,
+                  modifier = Modifier
+                    .height(44.dp)
+                    .testTag("quick_screen_scan_button"),
+                  shape = RoundedCornerShape(10.dp),
+                  colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface),
+                  contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = AccentBlue,
+                    modifier = Modifier.size(16.dp)
+                  )
+                  Spacer(modifier = Modifier.width(6.dp))
+                  Text(
+                    text = "Screen Scan",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                  )
+                }
+
+                IconButton(
+                  onClick = { showProtectionSettingsSheet = true },
+                  modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(colors.surfaceVariant)
+                    .border(1.dp, colors.outline, RoundedCornerShape(10.dp))
+                    .testTag("protection_settings_button")
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Security,
+                    contentDescription = "Protection Settings",
+                    tint = colors.onSurface,
+                    modifier = Modifier.size(20.dp)
+                  )
+                }
+              }
             }
           }
         }
 
         if (isBankingPrivacyActive) {
-          Spacer(modifier = Modifier.height(12.dp))
+          Spacer(modifier = Modifier.height(14.dp))
           Row(
             modifier = Modifier
               .fillMaxWidth()
-              .clip(RoundedCornerShape(8.dp))
+              .clip(RoundedCornerShape(10.dp))
               .background(StatusSafe.copy(alpha = 0.15f))
-              .border(1.dp, StatusSafe.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
-              .padding(10.dp),
+              .border(1.dp, StatusSafe.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+              .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
           ) {
             Icon(
               imageVector = Icons.Default.Lock,
               contentDescription = null,
               tint = StatusSafe,
-              modifier = Modifier.size(16.dp)
+              modifier = Modifier.size(18.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Column {
               Text(
                 text = "FINANCIAL PRIVACY GUARD ACTIVE",
@@ -287,47 +393,120 @@ fun ScannerScreen(
                 fontSize = 10.sp,
                 color = StatusSafe
               )
+              Spacer(modifier = Modifier.height(2.dp))
               Text(
-                text = "Auto-scanning paused inside verified banking/UPI app or website.",
+                text = "Auto-scanning safely paused inside verified banking/UPI app or website.",
                 fontFamily = SpaceGrotesk,
-                fontSize = 10.sp,
+                fontSize = 11.sp,
                 color = colors.onSurface
               )
             }
           }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
-        // Protection summary indicator pills
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          ProtectionPill(
-            title = "Background",
-            active = isBackgroundGuardian,
-            activeColor = AccentBlue,
-            modifier = Modifier.weight(1f)
-          )
-          ProtectionPill(
-            title = "Live Chip",
-            active = isLiveChipActive,
-            activeColor = AccentBlue,
-            modifier = Modifier.weight(1f)
-          )
-          ProtectionPill(
-            title = "Auto Guard",
-            active = isAutomationMode,
-            activeColor = DevModeCyan,
-            modifier = Modifier.weight(1f)
-          )
-          ProtectionPill(
-            title = "Zero PII",
-            active = isPrivacyMode,
-            activeColor = StatusSafe,
-            modifier = Modifier.weight(1f)
-          )
+        // Adaptive Protection summary indicator pills with dedicated icons and status
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+          val isCompact = maxWidth < 400.dp
+
+          if (isCompact) {
+            // 2x2 grid on compact devices so labels and icons have generous breathing room
+            Column(
+              modifier = Modifier.fillMaxWidth(),
+              verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                ProtectionPill(
+                  title = "Background",
+                  statusLabel = if (isBackgroundGuardian) "ON" else "OFF",
+                  icon = Icons.Default.NotificationsActive,
+                  active = isBackgroundGuardian,
+                  activeColor = AccentBlue,
+                  onClick = { showProtectionSettingsSheet = true },
+                  modifier = Modifier.weight(1f)
+                )
+                ProtectionPill(
+                  title = "Live Chip",
+                  statusLabel = if (isLiveChipActive) "ACTIVE" else "OFF",
+                  icon = Icons.Default.Smartphone,
+                  active = isLiveChipActive,
+                  activeColor = AccentBlue,
+                  onClick = { showProtectionSettingsSheet = true },
+                  modifier = Modifier.weight(1f)
+                )
+              }
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                ProtectionPill(
+                  title = "Auto Guard",
+                  statusLabel = if (isAutomationMode) "READY" else "OFF",
+                  icon = Icons.Default.AutoAwesome,
+                  active = isAutomationMode,
+                  activeColor = DevModeCyan,
+                  onClick = { showProtectionSettingsSheet = true },
+                  modifier = Modifier.weight(1f)
+                )
+                ProtectionPill(
+                  title = "Zero PII",
+                  statusLabel = if (isPrivacyMode) "SECURE" else "OFF",
+                  icon = Icons.Default.Lock,
+                  active = isPrivacyMode,
+                  activeColor = StatusSafe,
+                  onClick = { showProtectionSettingsSheet = true },
+                  modifier = Modifier.weight(1f)
+                )
+              }
+            }
+          } else {
+            // 1 row of 4 on standard screens
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+              ProtectionPill(
+                title = "Background",
+                statusLabel = if (isBackgroundGuardian) "ON" else "OFF",
+                icon = Icons.Default.NotificationsActive,
+                active = isBackgroundGuardian,
+                activeColor = AccentBlue,
+                onClick = { showProtectionSettingsSheet = true },
+                modifier = Modifier.weight(1f)
+              )
+              ProtectionPill(
+                title = "Live Chip",
+                statusLabel = if (isLiveChipActive) "ACTIVE" else "OFF",
+                icon = Icons.Default.Smartphone,
+                active = isLiveChipActive,
+                activeColor = AccentBlue,
+                onClick = { showProtectionSettingsSheet = true },
+                modifier = Modifier.weight(1f)
+              )
+              ProtectionPill(
+                title = "Auto Guard",
+                statusLabel = if (isAutomationMode) "READY" else "OFF",
+                icon = Icons.Default.AutoAwesome,
+                active = isAutomationMode,
+                activeColor = DevModeCyan,
+                onClick = { showProtectionSettingsSheet = true },
+                modifier = Modifier.weight(1f)
+              )
+              ProtectionPill(
+                title = "Zero PII",
+                statusLabel = if (isPrivacyMode) "SECURE" else "OFF",
+                icon = Icons.Default.Lock,
+                active = isPrivacyMode,
+                activeColor = StatusSafe,
+                onClick = { showProtectionSettingsSheet = true },
+                modifier = Modifier.weight(1f)
+              )
+            }
+          }
         }
       }
     }
@@ -694,20 +873,44 @@ fun ScannerScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
           ) {
-            Column(modifier = Modifier.weight(1f)) {
-              Text(
-                text = result.threatLevel.simpleTitle,
-                fontFamily = SpaceGrotesk,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = bannerBorder
-              )
-              Text(
-                text = "Target: ${result.attackVector}",
-                fontFamily = SpaceGrotesk,
-                fontSize = 12.sp,
-                color = colors.onSurfaceVariant
-              )
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier.weight(1f)
+            ) {
+              Box(
+                modifier = Modifier
+                  .size(36.dp)
+                  .clip(CircleShape)
+                  .background(bannerBorder.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+              ) {
+                Icon(
+                  imageVector = when (result.threatLevel) {
+                    ThreatLevel.DANGER -> Icons.Default.Warning
+                    ThreatLevel.SUSPICIOUS -> Icons.Default.Shield
+                    ThreatLevel.SAFE -> Icons.Default.CheckCircle
+                  },
+                  contentDescription = null,
+                  tint = bannerBorder,
+                  modifier = Modifier.size(20.dp)
+                )
+              }
+              Spacer(modifier = Modifier.width(10.dp))
+              Column {
+                Text(
+                  text = result.threatLevel.simpleTitle,
+                  fontFamily = SpaceGrotesk,
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 16.sp,
+                  color = bannerBorder
+                )
+                Text(
+                  text = "Target: ${result.attackVector}",
+                  fontFamily = SpaceGrotesk,
+                  fontSize = 12.sp,
+                  color = colors.onSurfaceVariant
+                )
+              }
             }
 
             IconButton(
@@ -719,12 +922,14 @@ fun ScannerScreen(
                   type = "text/plain"
                 }
                 context.startActivity(Intent.createChooser(sendIntent, "Share ScamShield Report"))
-              }
+              },
+              modifier = Modifier.size(48.dp)
             ) {
               Icon(
                 imageVector = Icons.Default.Share,
                 contentDescription = "Share Report",
-                tint = bannerBorder
+                tint = bannerBorder,
+                modifier = Modifier.size(20.dp)
               )
             }
           }
@@ -850,14 +1055,20 @@ private fun PresetChip(
     ThreatLevel.SAFE -> StatusSafe
   }
 
+  val scenarioIcon = when (preset.expectedRisk) {
+    ThreatLevel.DANGER -> Icons.Default.Warning
+    ThreatLevel.SUSPICIOUS -> Icons.Default.Shield
+    ThreatLevel.SAFE -> Icons.Default.CheckCircle
+  }
+
   Column(
     modifier = Modifier
-      .width(180.dp)
-      .clip(RoundedCornerShape(12.dp))
+      .width(185.dp)
+      .clip(RoundedCornerShape(14.dp))
       .background(colors.surface)
-      .border(1.dp, colors.outline, RoundedCornerShape(12.dp))
+      .border(1.dp, colors.outline, RoundedCornerShape(14.dp))
       .clickable(onClick = onClick)
-      .padding(10.dp)
+      .padding(12.dp)
   ) {
     Row(
       modifier = Modifier.fillMaxWidth(),
@@ -874,13 +1085,21 @@ private fun PresetChip(
 
       Box(
         modifier = Modifier
-          .size(6.dp)
+          .size(20.dp)
           .clip(CircleShape)
-          .background(chipColor)
-      )
+          .background(chipColor.copy(alpha = 0.15f)),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          imageVector = scenarioIcon,
+          contentDescription = null,
+          tint = chipColor,
+          modifier = Modifier.size(12.dp)
+        )
+      }
     }
 
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(6.dp))
 
     Text(
       text = preset.title,
@@ -891,7 +1110,7 @@ private fun PresetChip(
       maxLines = 1
     )
 
-    Spacer(modifier = Modifier.height(2.dp))
+    Spacer(modifier = Modifier.height(3.dp))
 
     Text(
       text = preset.snippet,
@@ -899,7 +1118,7 @@ private fun PresetChip(
       fontSize = 10.sp,
       color = colors.onSurfaceVariant,
       maxLines = 2,
-      lineHeight = 13.sp
+      lineHeight = 14.sp
     )
   }
 }
@@ -923,34 +1142,51 @@ private fun buildShareableReport(result: ThreatAnalysisResult): String {
 @Composable
 private fun ProtectionPill(
   title: String,
+  statusLabel: String,
+  icon: androidx.compose.ui.graphics.vector.ImageVector,
   active: Boolean,
   activeColor: androidx.compose.ui.graphics.Color,
+  onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   val colors = MaterialTheme.colorScheme
   Row(
     modifier = modifier
-      .clip(RoundedCornerShape(6.dp))
+      .clip(RoundedCornerShape(8.dp))
       .background(if (active) activeColor.copy(alpha = 0.12f) else colors.surfaceVariant)
-      .border(0.5.dp, if (active) activeColor.copy(alpha = 0.3f) else colors.outline.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
-      .padding(horizontal = 6.dp, vertical = 4.dp),
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.Center
+      .border(
+        1.dp,
+        if (active) activeColor.copy(alpha = 0.35f) else colors.outline.copy(alpha = 0.4f),
+        RoundedCornerShape(8.dp)
+      )
+      .clickable(onClick = onClick)
+      .padding(horizontal = 8.dp, vertical = 7.dp),
+    verticalAlignment = Alignment.CenterVertically
   ) {
-    Box(
-      modifier = Modifier
-        .size(6.dp)
-        .clip(CircleShape)
-        .background(if (active) activeColor else colors.onSurfaceVariant.copy(alpha = 0.4f))
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = if (active) activeColor else colors.onSurfaceVariant.copy(alpha = 0.6f),
+      modifier = Modifier.size(15.dp)
     )
-    Spacer(modifier = Modifier.width(4.dp))
-    Text(
-      text = title,
-      fontFamily = SpaceGrotesk,
-      fontSize = 9.sp,
-      fontWeight = FontWeight.SemiBold,
-      color = if (active) activeColor else colors.onSurfaceVariant
-    )
+    Spacer(modifier = Modifier.width(6.dp))
+    Column(modifier = Modifier.weight(1f)) {
+      Text(
+        text = title,
+        fontFamily = SpaceGrotesk,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = colors.onSurface,
+        maxLines = 1
+      )
+      Text(
+        text = statusLabel,
+        fontFamily = JetBrainsMono,
+        fontSize = 9.sp,
+        fontWeight = FontWeight.Bold,
+        color = if (active) activeColor else colors.onSurfaceVariant.copy(alpha = 0.6f)
+      )
+    }
   }
 }
 

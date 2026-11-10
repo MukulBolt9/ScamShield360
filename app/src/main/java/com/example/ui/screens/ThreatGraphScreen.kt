@@ -215,22 +215,39 @@ fun ThreatGraphScreen(
         ) {
           Button(
             onClick = onDefangText,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+              .weight(1f)
+              .height(48.dp),
             colors = ButtonDefaults.buttonColors(
               containerColor = AccentBlue,
               contentColor = colors.surface
             ),
             shape = RoundedCornerShape(10.dp)
           ) {
+            Icon(
+              imageVector = Icons.Default.Shield,
+              contentDescription = null,
+              modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
             Text("Defang [ . ]", fontFamily = SpaceGrotesk, fontSize = 12.sp, fontWeight = FontWeight.Bold)
           }
 
           OutlinedButton(
             onClick = onRefangText,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+              .weight(1f)
+              .height(48.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface)
           ) {
+            Icon(
+              imageVector = Icons.Default.Lan,
+              contentDescription = null,
+              tint = colors.onSurfaceVariant,
+              modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
             Text("Restore URL", fontFamily = SpaceGrotesk, fontSize = 12.sp)
           }
         }
@@ -243,7 +260,7 @@ fun ThreatGraphScreen(
               .clip(RoundedCornerShape(10.dp))
               .background(colors.surfaceVariant)
               .border(1.dp, colors.outline, RoundedCornerShape(10.dp))
-              .padding(12.dp),
+              .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
           ) {
@@ -260,11 +277,12 @@ fun ThreatGraphScreen(
                 val clip = ClipData.newPlainText("Defanged URL", defangOutput)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(context, "Copied safe link text", Toast.LENGTH_SHORT).show()
-              }
+              },
+              modifier = Modifier.size(48.dp)
             ) {
               Icon(
                 imageVector = Icons.Default.ContentCopy,
-                contentDescription = "Copy",
+                contentDescription = "Copy defanged link",
                 tint = AccentBlue,
                 modifier = Modifier.size(18.dp)
               )
