@@ -23,19 +23,34 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -67,7 +82,9 @@ fun ProtectionSettingsSheet(
   onToggleBankingPrivacyShield: () -> Unit,
   sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
+  val context = LocalContext.current
   val colors = MaterialTheme.colorScheme
+  var showPrivacyPolicyDialog by remember { mutableStateOf(false) }
 
   ModalBottomSheet(
     onDismissRequest = onDismiss,
@@ -146,34 +163,41 @@ fun ProtectionSettingsSheet(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier.fillMaxWidth()
+            ) {
               Icon(
                 imageVector = Icons.Default.Smartphone,
                 contentDescription = null,
                 tint = AccentBlue,
                 modifier = Modifier.size(16.dp)
               )
-              Spacer(modifier = Modifier.width(8.dp))
+              Spacer(modifier = Modifier.width(6.dp))
               Text(
                 text = "Android 16 Live Update & Now Bar",
                 fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                color = colors.onSurface
+                fontSize = 12.sp,
+                color = colors.onSurface,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 2
               )
               Spacer(modifier = Modifier.width(6.dp))
               Box(
                 modifier = Modifier
                   .clip(RoundedCornerShape(4.dp))
                   .background(AccentBlue.copy(alpha = 0.15f))
-                  .padding(horizontal = 5.dp, vertical = 1.dp)
+                  .padding(horizontal = 6.dp, vertical = 2.dp)
               ) {
                 Text(
                   text = "Native Chip",
                   fontFamily = JetBrainsMono,
                   fontSize = 8.sp,
                   color = AccentBlue,
-                  fontWeight = FontWeight.Bold
+                  fontWeight = FontWeight.Bold,
+                  maxLines = 1,
+                  softWrap = false
                 )
               }
             }
@@ -261,19 +285,163 @@ fun ProtectionSettingsSheet(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 6. Zero-PII Privacy Mode
-      SettingToggleRow(
-        icon = Icons.Default.Lock,
-        iconTint = if (isPrivacyMode) StatusSafe else colors.onSurfaceVariant,
-        title = "Zero-PII Token Redaction",
-        subtitle = "Auto-redacts phone numbers, emails, and auth tokens before intelligence queries",
-        badgeText = if (isPrivacyMode) "Redacted" else "Plaintext",
-        badgeColor = if (isPrivacyMode) StatusSafe else colors.onSurfaceVariant,
-        checked = isPrivacyMode,
-        onCheckedChange = { onTogglePrivacyMode() }
-      )
+      // 7. Privacy Policy & Compliance
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(12.dp))
+          .background(colors.surfaceVariant)
+          .border(1.dp, colors.outline, RoundedCornerShape(12.dp))
+          .clickable { showPrivacyPolicyDialog = true }
+          .padding(12.dp)
+          .testTag("privacy_policy_row")
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+              imageVector = Icons.Default.Description,
+              contentDescription = null,
+              tint = AccentBlue,
+              modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+              Text(
+                text = "Official Privacy Policy",
+                fontFamily = SpaceGrotesk,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                color = colors.onSurface
+              )
+              Text(
+                text = "Zero-PII guarantee, Financial Privacy Guard rules, and data handling disclosure",
+                fontFamily = SpaceGrotesk,
+                fontSize = 11.sp,
+                color = colors.onSurfaceVariant,
+                lineHeight = 15.sp
+              )
+            }
+          }
+
+          Icon(
+            imageVector = Icons.Default.OpenInNew,
+            contentDescription = "Read Policy",
+            tint = AccentBlue,
+            modifier = Modifier.size(14.dp)
+          )
+        }
+      }
 
       Spacer(modifier = Modifier.height(24.dp))
+    }
+
+    if (showPrivacyPolicyDialog) {
+      val scrollState = rememberScrollState()
+      AlertDialog(
+        onDismissRequest = { showPrivacyPolicyDialog = false },
+        title = {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+              imageVector = Icons.Default.Security,
+              contentDescription = null,
+              tint = AccentBlue,
+              modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "ScamShield 360 Privacy Policy",
+              fontFamily = SpaceGrotesk,
+              fontWeight = FontWeight.Bold,
+              fontSize = 17.sp,
+              color = colors.onSurface
+            )
+          }
+        },
+        text = {
+          Column(
+            modifier = Modifier
+              .verticalScroll(scrollState)
+              .padding(vertical = 4.dp)
+          ) {
+            Text(
+              text = "Last Updated: November 2026\n",
+              fontFamily = JetBrainsMono,
+              fontSize = 10.sp,
+              color = colors.onSurfaceVariant
+            )
+
+            Text(
+              text = "1. Financial Privacy Guard (Banking Protection)\nScamShield 360 automatically detects verified financial, UPI, and banking apps. When active, all screen reading and text processing is immediately paused to ensure user balances, credentials, PINs, and personal financial transactions are NEVER captured or processed.\n",
+              fontFamily = SpaceGrotesk,
+              fontSize = 11.sp,
+              color = colors.onSurface,
+              lineHeight = 16.sp
+            )
+
+            Text(
+              text = "2. Zero-PII Redaction Engine\nBefore querying threat intelligence APIs (VirusTotal, PhishTank, urlscan), phone numbers, email addresses, names, and session tokens embedded within extracted text are automatically redacted locally on your device.\n",
+              fontFamily = SpaceGrotesk,
+              fontSize = 11.sp,
+              color = colors.onSurface,
+              lineHeight = 16.sp
+            )
+
+            Text(
+              text = "3. Accessibility Service Usage\nThe optional ScamShield Accessibility Service reads on-screen text solely to extract web links (URLs) for proactive phishing analysis. It never logs keystrokes, personal messages, or user passwords.\n",
+              fontFamily = SpaceGrotesk,
+              fontSize = 11.sp,
+              color = colors.onSurface,
+              lineHeight = 16.sp
+            )
+
+            Text(
+              text = "4. Data Storage & Local Encrypted Vault\nSecurity reports and threat scores are stored locally in an encrypted database on your device. You can clear or delete your audit history at any time from the Vault screen.\n",
+              fontFamily = SpaceGrotesk,
+              fontSize = 11.sp,
+              color = colors.onSurface,
+              lineHeight = 16.sp
+            )
+
+            Text(
+              text = "5. Contact Information\nFor privacy inquiries or questions, contact: mukulbolt9@gmail.com",
+              fontFamily = SpaceGrotesk,
+              fontSize = 11.sp,
+              color = AccentBlue,
+              fontWeight = FontWeight.Bold,
+              lineHeight = 16.sp
+            )
+          }
+        },
+        confirmButton = {
+          Button(
+            onClick = {
+              showPrivacyPolicyDialog = false
+              val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sites.google.com/view/privacypolicyforscamshield360/home"))
+              context.startActivity(intent)
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = AccentBlue, contentColor = colors.surface)
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Text("Open Web Policy", fontFamily = SpaceGrotesk, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+              Spacer(modifier = Modifier.width(4.dp))
+              Icon(imageVector = Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(12.dp))
+            }
+          }
+        },
+        dismissButton = {
+          OutlinedButton(
+            onClick = { showPrivacyPolicyDialog = false }
+          ) {
+            Text("Close", fontFamily = SpaceGrotesk, fontSize = 12.sp)
+          }
+        },
+        containerColor = colors.surface,
+        shape = RoundedCornerShape(16.dp)
+      )
     }
   }
 }
@@ -306,34 +474,41 @@ private fun SettingToggleRow(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Column(modifier = Modifier.weight(1f)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.fillMaxWidth()
+        ) {
           Icon(
             imageVector = icon,
             contentDescription = null,
             tint = iconTint,
             modifier = Modifier.size(16.dp)
           )
-          Spacer(modifier = Modifier.width(8.dp))
+          Spacer(modifier = Modifier.width(6.dp))
           Text(
             text = title,
             fontFamily = SpaceGrotesk,
             fontWeight = FontWeight.Bold,
-            fontSize = 13.sp,
-            color = colors.onSurface
+            fontSize = 12.sp,
+            color = colors.onSurface,
+            modifier = Modifier.weight(1f, fill = false),
+            maxLines = 2
           )
           Spacer(modifier = Modifier.width(6.dp))
           Box(
             modifier = Modifier
               .clip(RoundedCornerShape(4.dp))
               .background(badgeColor.copy(alpha = 0.15f))
-              .padding(horizontal = 5.dp, vertical = 1.dp)
+              .padding(horizontal = 6.dp, vertical = 2.dp)
           ) {
             Text(
               text = badgeText,
               fontFamily = JetBrainsMono,
               fontSize = 8.sp,
               color = badgeColor,
-              fontWeight = FontWeight.Bold
+              fontWeight = FontWeight.Bold,
+              maxLines = 1,
+              softWrap = false
             )
           }
         }

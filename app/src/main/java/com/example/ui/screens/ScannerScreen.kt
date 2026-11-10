@@ -3,6 +3,7 @@ package com.example.ui.screens
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,19 +29,25 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -133,6 +140,7 @@ fun ScannerScreen(
   val colors = MaterialTheme.colorScheme
 
   var showProtectionSettingsSheet by remember { mutableStateOf(false) }
+  var showPrivacyPolicyDialog by remember { mutableStateOf(false) }
 
   if (showProtectionSettingsSheet) {
     ProtectionSettingsSheet(
@@ -150,6 +158,111 @@ fun ScannerScreen(
       onTogglePrivacyMode = onTogglePrivacyMode,
       onToggleAutomationMode = onToggleAutomationMode,
       onToggleBankingPrivacyShield = {}
+    )
+  }
+
+  if (showPrivacyPolicyDialog) {
+    val scrollState = rememberScrollState()
+    AlertDialog(
+      onDismissRequest = { showPrivacyPolicyDialog = false },
+      title = {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          Icon(
+            imageVector = Icons.Default.Security,
+            contentDescription = null,
+            tint = AccentBlue,
+            modifier = Modifier.size(20.dp)
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+          Text(
+            text = "ScamShield 360 Privacy Policy",
+            fontFamily = SpaceGrotesk,
+            fontWeight = FontWeight.Bold,
+            fontSize = 17.sp,
+            color = colors.onSurface
+          )
+        }
+      },
+      text = {
+        Column(
+          modifier = Modifier
+            .verticalScroll(scrollState)
+            .padding(vertical = 4.dp)
+        ) {
+          Text(
+            text = "Last Updated: November 2026\n",
+            fontFamily = JetBrainsMono,
+            fontSize = 10.sp,
+            color = colors.onSurfaceVariant
+          )
+
+          Text(
+            text = "1. Financial Privacy Guard (Banking Protection)\nScamShield 360 automatically detects verified financial, UPI, and banking apps. When active, all screen reading and text processing is immediately paused to ensure user balances, credentials, PINs, and personal financial transactions are NEVER captured or processed.\n",
+            fontFamily = SpaceGrotesk,
+            fontSize = 11.sp,
+            color = colors.onSurface,
+            lineHeight = 16.sp
+          )
+
+          Text(
+            text = "2. Zero-PII Redaction Engine\nBefore querying threat intelligence APIs (VirusTotal, PhishTank, urlscan), phone numbers, email addresses, names, and session tokens embedded within extracted text are automatically redacted locally on your device.\n",
+            fontFamily = SpaceGrotesk,
+            fontSize = 11.sp,
+            color = colors.onSurface,
+            lineHeight = 16.sp
+          )
+
+          Text(
+            text = "3. Accessibility Service Usage\nThe optional ScamShield Accessibility Service reads on-screen text solely to extract web links (URLs) for proactive phishing analysis. It never logs keystrokes, personal messages, or user passwords.\n",
+            fontFamily = SpaceGrotesk,
+            fontSize = 11.sp,
+            color = colors.onSurface,
+            lineHeight = 16.sp
+          )
+
+          Text(
+            text = "4. Data Storage & Local Encrypted Vault\nSecurity reports and threat scores are stored locally in an encrypted database on your device. You can clear or delete your audit history at any time from the Vault screen.\n",
+            fontFamily = SpaceGrotesk,
+            fontSize = 11.sp,
+            color = colors.onSurface,
+            lineHeight = 16.sp
+          )
+
+          Text(
+            text = "5. Contact Information\nFor privacy inquiries or questions, contact: mukulbolt9@gmail.com",
+            fontFamily = SpaceGrotesk,
+            fontSize = 11.sp,
+            color = AccentBlue,
+            fontWeight = FontWeight.Bold,
+            lineHeight = 16.sp
+          )
+        }
+      },
+      confirmButton = {
+        Button(
+          onClick = {
+            showPrivacyPolicyDialog = false
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sites.google.com/view/privacypolicyforscamshield360/home"))
+            context.startActivity(intent)
+          },
+          colors = ButtonDefaults.buttonColors(containerColor = AccentBlue, contentColor = colors.surface)
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Open Web Policy", fontFamily = SpaceGrotesk, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(imageVector = Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(12.dp))
+          }
+        }
+      },
+      dismissButton = {
+        OutlinedButton(
+          onClick = { showPrivacyPolicyDialog = false }
+        ) {
+          Text("Close", fontFamily = SpaceGrotesk, fontSize = 12.sp)
+        }
+      },
+      containerColor = colors.surface,
+      shape = RoundedCornerShape(16.dp)
     )
   }
 
@@ -267,6 +380,23 @@ fun ScannerScreen(
                     modifier = Modifier.size(20.dp)
                   )
                 }
+
+                IconButton(
+                  onClick = { showPrivacyPolicyDialog = true },
+                  modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(colors.surfaceVariant)
+                    .border(1.dp, colors.outline, RoundedCornerShape(10.dp))
+                    .testTag("privacy_policy_button")
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = "Privacy Policy",
+                    tint = AccentBlue,
+                    modifier = Modifier.size(20.dp)
+                  )
+                }
               }
             }
           } else {
@@ -359,6 +489,23 @@ fun ScannerScreen(
                     imageVector = Icons.Default.Security,
                     contentDescription = "Protection Settings",
                     tint = colors.onSurface,
+                    modifier = Modifier.size(20.dp)
+                  )
+                }
+
+                IconButton(
+                  onClick = { showPrivacyPolicyDialog = true },
+                  modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(colors.surfaceVariant)
+                    .border(1.dp, colors.outline, RoundedCornerShape(10.dp))
+                    .testTag("privacy_policy_button_wide")
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = "Privacy Policy",
+                    tint = AccentBlue,
                     modifier = Modifier.size(20.dp)
                   )
                 }
@@ -1031,9 +1178,75 @@ fun ScannerScreen(
         )
       }
 
-      // Human Shield / Scam Lesson
+      // Privacy Policy & Zero-PII Compliance Card
       item {
-        ScamLessonCard(lessons = result.scamLessons)
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.surface)
+            .border(1.dp, colors.outline, RoundedCornerShape(16.dp))
+            .clickable { showPrivacyPolicyDialog = true }
+            .padding(16.dp)
+            .testTag("privacy_policy_footer_card")
+        ) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Box(
+                modifier = Modifier
+                  .size(36.dp)
+                  .clip(CircleShape)
+                  .background(AccentBlue.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Description,
+                  contentDescription = null,
+                  tint = AccentBlue,
+                  modifier = Modifier.size(18.dp)
+                )
+              }
+              Spacer(modifier = Modifier.width(10.dp))
+              Column {
+                Text(
+                  text = "Official Privacy Policy",
+                  fontFamily = SpaceGrotesk,
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 14.sp,
+                  color = colors.onSurface
+                )
+                Text(
+                  text = "Financial Privacy Guard & Zero-PII Guarantee",
+                  fontFamily = SpaceGrotesk,
+                  fontSize = 11.sp,
+                  color = AccentBlue,
+                  fontWeight = FontWeight.SemiBold
+                )
+              }
+            }
+
+            Icon(
+              imageVector = Icons.Default.OpenInNew,
+              contentDescription = "Read Privacy Policy",
+              tint = AccentBlue,
+              modifier = Modifier.size(16.dp)
+            )
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          Text(
+            text = "ScamShield 360 automatically pauses screen reading inside banking apps and redacts phone numbers, emails, and tokens before querying threat APIs. Tap to read the full policy.",
+            fontFamily = SpaceGrotesk,
+            fontSize = 11.sp,
+            color = colors.onSurfaceVariant,
+            lineHeight = 15.sp
+          )
+        }
       }
 
       item {

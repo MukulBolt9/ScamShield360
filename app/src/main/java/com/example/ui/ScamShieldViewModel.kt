@@ -64,8 +64,12 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
   private val _selectedTab = MutableStateFlow(0)
   val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
 
-  // Theme Mode: null = follow system, true = Dark, false = Light
-  private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
+  private val prefs = application.getSharedPreferences("scamshield_user_prefs", Context.MODE_PRIVATE)
+
+  // Theme Mode: null = follow system, true = Dark, false = Light (persisted in SharedPreferences)
+  private val _isDarkTheme = MutableStateFlow<Boolean?>(
+    if (prefs.contains("is_dark_theme")) prefs.getBoolean("is_dark_theme", true) else null
+  )
   val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
 
   // Dev Mode toggle
@@ -165,11 +169,13 @@ class ScamShieldViewModel(application: Application) : AndroidViewModel(applicati
   }
 
   fun toggleTheme() {
-    _isDarkTheme.value = when (_isDarkTheme.value) {
+    val newTheme = when (_isDarkTheme.value) {
       null -> true
       true -> false
       false -> true
     }
+    _isDarkTheme.value = newTheme
+    prefs.edit().putBoolean("is_dark_theme", newTheme).apply()
   }
 
   fun toggleDevMode() {
