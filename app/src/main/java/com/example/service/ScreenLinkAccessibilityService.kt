@@ -359,32 +359,48 @@ class ScreenLinkAccessibilityService : AccessibilityService() {
 
   private fun proactivelyAuditLinks(urls: List<String>, messageContext: String) {
     serviceScope.launch {
+      val results = mutableListOf<ThreatAnalysisResult>()
       for (url in urls) {
-        if (scannedUrlsHistory.size > 25) {
+        if (scannedUrlsHistory.size > 15) {
           scannedUrlsHistory.clear()
         }
         scannedUrlsHistory.add(url)
         try {
-          Log.i(TAG, "Automation Guard: Proactively evaluating on-screen link on its own: $url")
+          Log.i(TAG, "Automation Guard: Proactively evaluating on-screen link: $url")
           val result = SafeAnalysisEngine.analyze(
             inputMessage = messageContext,
             inputUrl = url,
             isPrivacyMode = true
           )
-
-          _latestAutoScanResult.value = result
-
-          val isThreat = result.threatLevel == ThreatLevel.DANGER || result.threatLevel == ThreatLevel.SUSPICIOUS || result.overallScore >= 45
-          LinkGuardianService.updateTelemetry(applicationContext, result.overallScore, isThreat)
-
-          if (isThreat) {
-            val alertSummary = "${result.inputUrl.take(35)}... (${result.overallScore}/100) • ${result.attackVector}"
-            LinkGuardianService.updateThreatAlert(applicationContext, alertSummary, result.overallScore)
-          } else {
-            LinkGuardianService.clearThreatAlert(applicationContext)
-          }
+          results.add(result)
         } catch (e: Exception) {
           Log.w(TAG, "Proactive audit failed for $url: ${e.message}")
+        }
+      }
+
+      val highestThreatResult = results.maxByOrNull { it.overallScore }
+      if (highestThreatResult != null) {
+        _latestAutoScanResult.value = highestThreatResult
+        val isThreat = highestThreatResult.threatLevel == ThreatLevel.DANGER ||
+            highestThreatResult.threatLevel == ThreatLevel.SUSPICIOUS ||
+            highestThreatResult.overallScore >= 45
+
+        LinkGuardianService.updateTelemetry(applicationContext, highestThreatResult.overallScore, isThreat)
+
+        if (isThreat) {
+          val alertSummary = "${highestThreatResult.inputUrl.take(35)}... (${highestThreatResult.overallScore}/100) • ${highestThreatResult.attackVector}"
+          LinkGuardianService.updateThreatAlert(applicationContext, alertSummary, highestThreatResult.overallScore)
+
+          // Post high-priority system heads-up pop-up alert notification directly over screen!
+          try {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val alertNotification = NotificationHelper.buildAutoScanAlertNotification(applicationContext, highestThreatResult)
+            notificationManager.notify(NotificationHelper.AUTO_ALERT_NOTIFICATION_ID, alertNotification)
+          } catch (e: Exception) {
+            Log.e(TAG, "Failed to post auto-scan alert notification: ${e.message}")
+          }
+        } else {
+          LinkGuardianService.clearThreatAlert(applicationContext)
         }
       }
     }

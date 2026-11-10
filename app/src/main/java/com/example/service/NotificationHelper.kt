@@ -44,10 +44,13 @@ object NotificationHelper {
       val alertChannel = NotificationChannel(
         AUTO_ALERT_CHANNEL_ID,
         AUTO_ALERT_CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_LOW
+        NotificationManager.IMPORTANCE_HIGH
       ).apply {
         description = "Real-time threat alerts integrated with ScamShield Live Update system."
         setShowBadge(true)
+        enableVibration(true)
+        enableLights(true)
+        lightColor = Color.parseColor("#EF4444")
         lockscreenVisibility = Notification.VISIBILITY_PUBLIC
       }
       manager?.createNotificationChannel(alertChannel)
@@ -169,21 +172,62 @@ object NotificationHelper {
       }
     }
 
-    return builder.build()
+    val notification = builder.build()
+
+    // Android 16 Promoted Live Update Status Chip API (setRequestPromotedOngoing):
+    try {
+      val m = notification.javaClass.getMethod("setRequestPromotedOngoing", Boolean::class.javaPrimitiveType)
+      m.invoke(notification, true)
+    } catch (_: Throwable) {
+      try {
+        val m = notification.javaClass.getMethod("setRequestPromoted", Boolean::class.javaPrimitiveType)
+        m.invoke(notification, true)
+      } catch (_: Throwable) {}
+    }
+
+    return notification
   }
 
   fun buildAutoScanAlertNotification(
     context: Context,
     result: com.example.data.model.ThreatAnalysisResult
   ): Notification {
-    val alertSummary = "${if (result.overallScore >= 70) "Critical Scam" else "Suspicious Link"}: ${result.inputUrl.take(35)}... (${result.overallScore}/100)"
-    return buildLiveNotification(
-      context = context,
-      isNowbarMode = LinkGuardianService.isNowbarMode,
-      scannedCount = LinkGuardianService.totalScanned,
-      threatCount = LinkGuardianService.totalThreats,
-      latestScore = result.overallScore,
-      latestThreatAlertText = alertSummary
+    val openAppIntent = Intent(context, MainActivity::class.java).apply {
+      flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+    }
+    val openAppPendingIntent = PendingIntent.getActivity(
+      context, 0, openAppIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
+
+    val scanIntent = Intent(context, AssistantOverlayActivity::class.java).apply {
+      flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+    }
+    val scanPendingIntent = PendingIntent.getActivity(
+      context, 1, scanIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val title = if (result.overallScore >= 70) "🚨 Critical Scam Link Flagged!" else "⚠️ Suspicious Link Detected"
+    val body = "Flagged: ${result.inputUrl}\nRisk Score: ${result.overallScore}/100 • ${result.attackVector}"
+
+    val tintColor = if (result.overallScore >= 70) Color.parseColor("#EF4444") else Color.parseColor("#F59E0B")
+
+    return NotificationCompat.Builder(context, AUTO_ALERT_CHANNEL_ID)
+      .setSmallIcon(R.drawable.ic_notification_shield)
+      .setContentTitle(title)
+      .setContentText(body)
+      .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+      .setPriority(NotificationCompat.PRIORITY_HIGH)
+      .setDefaults(Notification.DEFAULT_ALL)
+      .setAutoCancel(true)
+      .setCategory(NotificationCompat.CATEGORY_ALARM)
+      .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+      .setColor(tintColor)
+      .setColorized(true)
+      .setContentIntent(scanPendingIntent)
+      .addAction(R.drawable.ic_notification_shield, "🔍 Deep Audit", scanPendingIntent)
+      .addAction(R.drawable.ic_notification_shield, "🛡️ Open App", openAppPendingIntent)
+      .build()
   }
 }
