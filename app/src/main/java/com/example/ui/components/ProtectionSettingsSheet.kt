@@ -148,7 +148,7 @@ fun ProtectionSettingsSheet(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 2. Android 16 Live Update Status Bar Chip
+      // 2. Android 16 Live Update & Samsung Now Bar
       Column(
         modifier = Modifier
           .fillMaxWidth()
@@ -201,9 +201,9 @@ fun ProtectionSettingsSheet(
                 )
               }
             }
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-              text = "On Android 16+, Live Updates natively power the Pixel Status Bar Chip and Samsung One UI Now Bar. Pre-Android 16 devices use the dedicated One UI 7 lock screen meter layout below.",
+              text = "Live Updates natively power the Pixel Status Bar Chip and Samsung One UI Now Bar across lock screen, status bar, and notifications using standard Android Platform APIs.",
               fontFamily = SpaceGrotesk,
               fontSize = 11.sp,
               color = colors.onSurfaceVariant,
@@ -239,20 +239,6 @@ fun ProtectionSettingsSheet(
           }
         }
       }
-
-      Spacer(modifier = Modifier.height(12.dp))
-
-      // 3. Samsung One UI 7 NowBar Meter Mode (For Android 16-lower devices)
-      SettingToggleRow(
-        icon = Icons.Default.Smartphone,
-        iconTint = if (isSamsungNowbarEnabled) SamsungNowbarPurple else colors.onSurfaceVariant,
-        title = "Samsung One UI 7 Now Bar Meter",
-        subtitle = "Applies dedicated RemoteViews progress meter on Lock Screen & AOD for One UI 7 (Android 14/15 devices)",
-        badgeText = "One UI 7",
-        badgeColor = SamsungNowbarPurple,
-        checked = isSamsungNowbarEnabled,
-        onCheckedChange = { onToggleSamsungNowbar() }
-      )
 
       Spacer(modifier = Modifier.height(12.dp))
 
